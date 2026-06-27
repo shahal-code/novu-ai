@@ -37,18 +37,9 @@
     .shine {
       animation: shine 2.8s ease-in-out infinite;
     }
-    .orbit {
-      animation: orbit 6s linear infinite;
-      transform-origin: 256px 256px;
+    .hand {
+      transform-origin: center;
     }
-    .arm, .leg {
-      transform-box: fill-box;
-      transform-origin: center top;
-    }
-    .left-leg { animation: walkLeft 1.2s ease-in-out infinite alternate; }
-    .right-leg { animation: walkRight 1.2s ease-in-out infinite alternate; }
-    .left-arm { animation: walkRight 1.2s ease-in-out infinite alternate; }
-    .right-arm { animation: walkLeft 1.2s ease-in-out infinite alternate; }
     @keyframes float {
       0%, 100% { transform: translateY(0px) scale(1); }
       50% { transform: translateY(-8px) scale(1.01); }
@@ -66,18 +57,6 @@
       0%, 100% { opacity: 0.65; transform: translateY(0px); }
       50% { opacity: 1; transform: translateY(-6px); }
     }
-    @keyframes orbit {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    @keyframes walkLeft {
-      0% { transform: rotate(30deg); }
-      100% { transform: rotate(-30deg); }
-    }
-    @keyframes walkRight {
-      0% { transform: rotate(-30deg); }
-      100% { transform: rotate(30deg); }
-    }
   </style>
 
   <rect width="512" height="512" rx="124" fill="url(#bg)" />
@@ -88,23 +67,8 @@
   </g>
 
   <g class="float">
-    <!-- Legs -->
-    <g class="leg left-leg">
-      <path d="M170 340v60" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
-      <path d="M170 340v60" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
-    </g>
-    <g class="leg right-leg">
-      <path d="M342 340v60" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
-      <path d="M342 340v60" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
-    </g>
-
-    <!-- Antenna -->
-    <path d="M256 144v-36" fill="none" stroke="#67e8f9" stroke-width="10" stroke-linecap="round" />
-    <circle cx="256" cy="100" r="14" fill="#22c55e" />
-
-    <!-- Robot Head (replaces message body) -->
-    <rect x="84" y="144" width="344" height="212" rx="64" fill="url(#bubble)" />
-    <rect x="109" y="166" width="294" height="183" rx="57" fill="#f8fffb" opacity="0.55" />
+    <path d="M148 144h216c35.3 0 64 28.7 64 64v84c0 35.3-28.7 64-64 64H278l-74 60c-7.3 5.9-18.1 0.7-18.1-8.6V356h-38.9c-35.3 0-64-28.7-64-64v-84c0-35.3 28.7-64 64-64Z" fill="url(#bubble)" />
+    <path d="M166 166h180c31.5 0 57 25.5 57 57v69c0 31.5-25.5 57-57 57H264l-56 45v-45h-42c-31.5 0-57-25.5-57-57v-69c0-31.5 25.5-57 57-57Z" fill="#f8fffb" opacity="0.55" />
 
     <circle cx="210" cy="252" r="17" fill="#0f172a" class="eye blink">
       <animate attributeName="r" values="17;17.8;17" dur="3.4s" repeatCount="indefinite" />
@@ -126,14 +90,15 @@
     <path d="M196 225c8-11 20-17 34-17" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.55" />
     <path d="M284 225c8-11 20-17 34-17" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.55" />
 
-    <!-- Arms -->
-    <g class="arm left-arm">
-      <path d="M60 220v80" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
-      <path d="M60 220v80" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
+    <!-- Left Hand -->
+    <g class="hand" transform="translate(34 64) rotate(-18) scale(0.9)">
+      <path d="M136 285c18-37 42-62 72-76 13-6 27 5 23 19l-17 57c-5 17-18 30-35 35l-24 7c-16 5-27-16-19-42Z" fill="#f8fffb" stroke="#d1fae5" stroke-width="8" />
+      <path d="M169 286c9-19 21-35 36-47" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round" opacity="0.45" />
     </g>
-    <g class="arm right-arm">
-      <path d="M452 220v80" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
-      <path d="M452 220v80" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
+    <!-- Right Hand -->
+    <g class="hand" transform="translate(-34 64) rotate(18) scale(0.9)">
+      <path d="M376 285c-18-37-42-62-72-76-13-6-27 5-23 19l17 57c5 17 18 30 35 35l24 7c16 5 27-16 19-42Z" fill="#f8fffb" stroke="#d1fae5" stroke-width="8" />
+      <path d="M343 286c-9-19-21-35-36-47" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round" opacity="0.45" />
     </g>
   </g>
 </svg>

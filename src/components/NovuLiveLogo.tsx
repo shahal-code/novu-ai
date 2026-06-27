@@ -59,27 +59,20 @@ export default function NovuLiveLogo({ status = 'idle', className = "" }: NovuLi
         .novu-live-logo .smile {
           animation: novuSmile 3.6s ease-in-out infinite;
           transform-origin: center;
-          transition: transform 300ms ease, stroke-width 300ms ease;
         }
-        .novu-live-logo .arm, .novu-live-logo .leg {
+        .novu-live-logo .hand {
+          opacity: 0;
+          transform: translateY(64px) scale(0.9);
+          transition: opacity 180ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
           transform-box: fill-box;
-          transform-origin: center top;
-          transition: transform 300ms ease, opacity 180ms ease;
+          transform-origin: center;
         }
-        .novu-live-logo .left-leg {
-          animation: walkLeft 1.2s ease-in-out infinite alternate;
+        .novu-live-logo .left-hand {
+          transform: translate(34px, 64px) rotate(-18deg) scale(0.9);
         }
-        .novu-live-logo .right-leg {
-          animation: walkRight 1.2s ease-in-out infinite alternate;
+        .novu-live-logo .right-hand {
+          transform: translate(-34px, 64px) rotate(18deg) scale(0.9);
         }
-        .novu-live-logo .left-arm {
-          animation: walkRight 1.2s ease-in-out infinite alternate;
-        }
-        .novu-live-logo .right-arm {
-          animation: walkLeft 1.2s ease-in-out infinite alternate;
-        }
-        
-        /* Covering State */
         .novu-live-logo.is-covering .eye,
         .novu-live-logo.is-covering .eye-highlight {
           animation: none;
@@ -88,90 +81,20 @@ export default function NovuLiveLogo({ status = 'idle', className = "" }: NovuLi
         .novu-live-logo.is-covering .eye-highlight {
           opacity: 0;
         }
-        .novu-live-logo.is-covering .left-arm {
-          animation: none;
-          transform: rotate(130deg);
-        }
-        .novu-live-logo.is-covering .right-arm {
-          animation: none;
-          transform: rotate(-130deg);
-        }
-        .novu-live-logo.is-covering .left-leg,
-        .novu-live-logo.is-covering .right-leg {
-          animation: none;
-        }
-        
-        /* Looking State */
         .novu-live-logo.is-looking .eye-group {
           transform: translate(10px, 10px);
         }
         .novu-live-logo.is-looking .eye {
           animation-duration: 6s;
         }
-        
-        /* Typing State (Reading & Running) */
-        .novu-live-logo.is-typing .eye-group {
-          animation: novuRead 1.5s infinite ease-in-out;
+        .novu-live-logo.is-covering .left-hand {
+          opacity: 1;
+          transform: translate(0, 0) rotate(-8deg) scale(1);
         }
-        .novu-live-logo.is-typing .eye {
-          animation: none;
+        .novu-live-logo.is-covering .right-hand {
+          opacity: 1;
+          transform: translate(0, 0) rotate(8deg) scale(1);
         }
-        .novu-live-logo.is-typing .float {
-          animation: novuFloat 0.8s ease-in-out infinite;
-        }
-        .novu-live-logo.is-typing .arm,
-        .novu-live-logo.is-typing .leg {
-          animation-duration: 0.25s;
-        }
-        
-        /* Thinking State (Processing & Running) */
-        .novu-live-logo.is-thinking .eye-group {
-          animation: novuThink 1.2s infinite ease-in-out;
-        }
-        .novu-live-logo.is-thinking .eye {
-          animation: none;
-          transform: scaleY(0.6);
-        }
-        .novu-live-logo.is-thinking .float {
-          animation: novuFloat 0.8s ease-in-out infinite;
-        }
-        .novu-live-logo.is-thinking .arm,
-        .novu-live-logo.is-thinking .leg {
-          animation-duration: 0.25s;
-        }
-        
-        /* Success State */
-        .novu-live-logo.is-success .smile {
-          transform: translateY(2px) scale(1.1);
-          stroke-width: 16;
-        }
-        .novu-live-logo.is-success .eye {
-          animation: none;
-          transform: scaleY(1.2);
-        }
-        .novu-live-logo.is-success .left-arm {
-          animation: none;
-          transform: rotate(150deg);
-        }
-        .novu-live-logo.is-success .right-arm {
-          animation: none;
-          transform: rotate(-150deg);
-        }
-        .novu-live-logo.is-success .left-leg,
-        .novu-live-logo.is-success .right-leg {
-          animation: none;
-        }
-        
-        /* Greeting State */
-        .novu-live-logo.is-greeting .right-arm {
-          animation: novuWave 2.5s ease-in-out infinite;
-        }
-        .novu-live-logo.is-greeting .left-arm,
-        .novu-live-logo.is-greeting .left-leg,
-        .novu-live-logo.is-greeting .right-leg {
-          animation: none;
-        }
-        
         @keyframes novuFloat {
           0%, 100% { transform: translateY(0px) scale(1); }
           50% { transform: translateY(-8px) scale(1.01); }
@@ -189,31 +112,6 @@ export default function NovuLiveLogo({ status = 'idle', className = "" }: NovuLi
           0%, 100% { opacity: 0.65; transform: translateY(0px); }
           50% { opacity: 1; transform: translateY(-6px); }
         }
-        @keyframes novuRead {
-          0%, 100% { transform: translate(-15px, 0); }
-          50% { transform: translate(15px, 0); }
-        }
-        @keyframes novuThink {
-          0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(8px, -8px); }
-          50% { transform: translate(0, -12px); }
-          75% { transform: translate(-8px, -8px); }
-        }
-        @keyframes walkLeft {
-          0% { transform: rotate(30deg); }
-          100% { transform: rotate(-30deg); }
-        }
-        @keyframes walkRight {
-          0% { transform: rotate(-30deg); }
-          100% { transform: rotate(30deg); }
-        }
-        @keyframes novuWave {
-          0%, 100% { transform: rotate(-30deg); }
-          20% { transform: rotate(-130deg); }
-          40% { transform: rotate(-80deg); }
-          60% { transform: rotate(-130deg); }
-          80% { transform: rotate(-80deg); }
-        }
       `}</style>
 
       <rect width="512" height="512" rx="124" fill="url(#novuLogoBg)" />
@@ -224,23 +122,8 @@ export default function NovuLiveLogo({ status = 'idle', className = "" }: NovuLi
       </g>
 
       <g className="float">
-        {/* Legs */}
-        <g className="leg left-leg">
-          <path d="M170 340v60" fill="none" stroke="#d1fae5" strokeWidth="24" strokeLinecap="round" />
-          <path d="M170 340v60" fill="none" stroke="#0f766e" strokeWidth="24" strokeLinecap="round" opacity="0.3" />
-        </g>
-        <g className="leg right-leg">
-          <path d="M342 340v60" fill="none" stroke="#d1fae5" strokeWidth="24" strokeLinecap="round" />
-          <path d="M342 340v60" fill="none" stroke="#0f766e" strokeWidth="24" strokeLinecap="round" opacity="0.3" />
-        </g>
-
-        {/* Antenna */}
-        <path d="M256 144v-36" fill="none" stroke="#67e8f9" strokeWidth="10" strokeLinecap="round" />
-        <circle cx="256" cy="100" r="14" fill="#22c55e" />
-
-        {/* Robot Head (replaces message body) */}
-        <rect x="84" y="144" width="344" height="212" rx="64" fill="url(#novuLogoBubble)" />
-        <rect x="109" y="166" width="294" height="183" rx="57" fill="#f8fffb" opacity="0.55" />
+        <path d="M148 144h216c35.3 0 64 28.7 64 64v84c0 35.3-28.7 64-64 64H278l-74 60c-7.3 5.9-18.1 0.7-18.1-8.6V356h-38.9c-35.3 0-64-28.7-64-64v-84c0-35.3 28.7-64 64-64Z" fill="url(#novuLogoBubble)" />
+        <path d="M166 166h180c31.5 0 57 25.5 57 57v69c0 31.5-25.5 57-57 57H264l-56 45v-45h-42c-31.5 0-57-25.5-57-57v-69c0-31.5 25.5-57 57-57Z" fill="#f8fffb" opacity="0.55" />
 
         <g className="eye-group">
           <circle cx="210" cy="252" r="17" fill="#0f172a" className="eye" />
@@ -259,14 +142,13 @@ export default function NovuLiveLogo({ status = 'idle', className = "" }: NovuLi
         <path d="M196 225c8-11 20-17 34-17" fill="none" stroke="#ffffff" strokeWidth="9" strokeLinecap="round" opacity="0.55" />
         <path d="M284 225c8-11 20-17 34-17" fill="none" stroke="#ffffff" strokeWidth="9" strokeLinecap="round" opacity="0.55" />
 
-        {/* Arms */}
-        <g className="arm left-arm">
-          <path d="M60 220v80" fill="none" stroke="#d1fae5" strokeWidth="24" strokeLinecap="round" />
-          <path d="M60 220v80" fill="none" stroke="#0f766e" strokeWidth="24" strokeLinecap="round" opacity="0.3" />
+        <g className="hand left-hand">
+          <path d="M136 285c18-37 42-62 72-76 13-6 27 5 23 19l-17 57c-5 17-18 30-35 35l-24 7c-16 5-27-16-19-42Z" fill="#f8fffb" stroke="#d1fae5" strokeWidth="8" />
+          <path d="M169 286c9-19 21-35 36-47" fill="none" stroke="#0f766e" strokeWidth="8" strokeLinecap="round" opacity="0.45" />
         </g>
-        <g className="arm right-arm">
-          <path d="M452 220v80" fill="none" stroke="#d1fae5" strokeWidth="24" strokeLinecap="round" />
-          <path d="M452 220v80" fill="none" stroke="#0f766e" strokeWidth="24" strokeLinecap="round" opacity="0.3" />
+        <g className="hand right-hand">
+          <path d="M376 285c-18-37-42-62-72-76-13-6-27 5-23 19l17 57c5 17 18 30 35 35l24 7c16 5 27-16 19-42Z" fill="#f8fffb" stroke="#d1fae5" strokeWidth="8" />
+          <path d="M343 286c-9-19-21-35-36-47" fill="none" stroke="#0f766e" strokeWidth="8" strokeLinecap="round" opacity="0.45" />
         </g>
       </g>
     </svg>
