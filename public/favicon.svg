@@ -41,6 +41,14 @@
       animation: orbit 6s linear infinite;
       transform-origin: 256px 256px;
     }
+    .arm, .leg {
+      transform-box: fill-box;
+      transform-origin: center top;
+    }
+    .left-leg { animation: walkLeft 1.2s ease-in-out infinite alternate; }
+    .right-leg { animation: walkRight 1.2s ease-in-out infinite alternate; }
+    .left-arm { animation: walkRight 1.2s ease-in-out infinite alternate; }
+    .right-arm { animation: walkLeft 1.2s ease-in-out infinite alternate; }
     @keyframes float {
       0%, 100% { transform: translateY(0px) scale(1); }
       50% { transform: translateY(-8px) scale(1.01); }
@@ -62,6 +70,14 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+    @keyframes walkLeft {
+      0% { transform: rotate(30deg); }
+      100% { transform: rotate(-30deg); }
+    }
+    @keyframes walkRight {
+      0% { transform: rotate(-30deg); }
+      100% { transform: rotate(30deg); }
+    }
   </style>
 
   <rect width="512" height="512" rx="124" fill="url(#bg)" />
@@ -72,6 +88,16 @@
   </g>
 
   <g class="float">
+    <!-- Legs -->
+    <g class="leg left-leg">
+      <path d="M170 340v60" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
+      <path d="M170 340v60" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
+    </g>
+    <g class="leg right-leg">
+      <path d="M342 340v60" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
+      <path d="M342 340v60" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
+    </g>
+
     <!-- Antenna -->
     <path d="M256 144v-36" fill="none" stroke="#67e8f9" stroke-width="10" stroke-linecap="round" />
     <circle cx="256" cy="100" r="14" fill="#22c55e" />
@@ -99,5 +125,15 @@
 
     <path d="M196 225c8-11 20-17 34-17" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.55" />
     <path d="M284 225c8-11 20-17 34-17" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.55" />
+
+    <!-- Arms -->
+    <g class="arm left-arm">
+      <path d="M60 220v80" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
+      <path d="M60 220v80" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
+    </g>
+    <g class="arm right-arm">
+      <path d="M452 220v80" fill="none" stroke="#d1fae5" stroke-width="24" stroke-linecap="round" />
+      <path d="M452 220v80" fill="none" stroke="#0f766e" stroke-width="24" stroke-linecap="round" opacity="0.3" />
+    </g>
   </g>
 </svg>
