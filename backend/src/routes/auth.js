@@ -23,7 +23,7 @@ function authResponse(user, status = 200) {
   return { status, body: { token: signToken(user._id.toString()), user: userPayload(user) } };
 }
 
-function getMailer() {
+async function getMailer() {
   if (process.env.SMTP_URL) return nodemailer.createTransport(process.env.SMTP_URL);
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     return nodemailer.createTransport({
@@ -33,7 +33,19 @@ function getMailer() {
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
   }
-  return null;
+  
+  // Development fallback: Ethereal test account
+  console.log("No SMTP credentials found. Falling back to Ethereal test account...");
+  const testAccount = await nodemailer.createTestAccount();
+  return nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
 }
 
 // Password registration remains available for people who prefer it.
@@ -81,8 +93,6 @@ router.post('/email-otp/request', async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
     if (!emailPattern.test(email || '')) return res.status(400).json({ error: 'Enter a valid email address.' });
-    const mailer = getMailer();
-    if (!mailer || !process.env.EMAIL_FROM) return res.status(503).json({ error: 'Email sign-in is not configured yet.' });
 
     const code = crypto.randomInt(100000, 1000000).toString();
     const codeHash = await bcrypt.hash(code, 10);
@@ -91,12 +101,31 @@ router.post('/email-otp/request', async (req, res) => {
       { codeHash, attempts: 0, expiresAt: new Date(Date.now() + 10 * 60 * 1000) },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-    await mailer.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: email,
-      subject: 'Your NovuAI verification code',
-      text: `Your NovuAI verification code is ${code}. It expires in 10 minutes.`,
-    });
+    
+    console.log(`\n======================================`);
+    console.log(`🔑 DEV OTP CODE FOR ${email}: ${code}`);
+    console.log(`======================================\n`);
+
+    try {
+      const mailer = await getMailer();
+      if (mailer) {
+        const info = await mailer.sendMail({
+          from: process.env.EMAIL_FROM || '"NovuAI Dev" <test@novuai.app>',
+          to: email,
+          subject: 'Your NovuAI verification code',
+          text: `Your NovuAI verification code is ${code}. It expires in 10 minutes.`,
+        });
+        
+        // Log the preview URL to the terminal in development
+        const previewUrl = nodemailer.getTestMessageUrl(info);
+        if (previewUrl) {
+          console.log("📧 Ethereal Email Preview URL: %s", previewUrl);
+        }
+      }
+    } catch (mailErr) {
+      console.warn("⚠️ Could not send test email (Ethereal might be rate limited). Use the code printed above.");
+    }
+    
     res.json({ message: 'Verification code sent.' });
   } catch (err) {
     console.error('Email OTP error:', err);
@@ -117,7 +146,12 @@ router.post('/email-otp/verify', async (req, res) => {
       return res.status(400).json({ error: 'That verification code is incorrect.' });
     }
     await EmailOtp.deleteOne({ _id: record._id });
-    const user = await createOrFindUser({ email }, { email });
+    
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({ email });
+    }
+    
     const result = authResponse(user);
     res.json(result.body);
   } catch (err) {
