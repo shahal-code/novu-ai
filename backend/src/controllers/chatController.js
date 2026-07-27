@@ -1,3 +1,4 @@
+import { StringDecoder } from 'node:util';
 import User from '../models/User.js';
 import { buildChatPayload, createChatStream } from '../services/chatService.js';
 
@@ -23,8 +24,7 @@ export async function streamChat(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.flushHeaders();
 
-    const reader = groqRes.body.getReader();
-    const decoder = new TextDecoder();
+    const decoder = new StringDecoder('utf8');
     let buffer = '';
 
     const flushLine = (line) => {
@@ -44,12 +44,9 @@ export async function streamChat(req, res) {
       }
     };
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
+    await new Promise((resolve, reject) => {
+      groqRes.body.on('data', (chunk) => {
+        buffer += decoder.write(chunk);
         let newlineIndex = buffer.indexOf('\n');
         while (newlineIndex !== -1) {
           const line = buffer.slice(0, newlineIndex);
@@ -57,20 +54,26 @@ export async function streamChat(req, res) {
           flushLine(line);
           newlineIndex = buffer.indexOf('\n');
         }
-      }
+      });
 
-      if (buffer.trim()) {
-        flushLine(buffer);
-      }
-    } finally {
-      res.write('data: [DONE]\n\n');
-      res.flush?.();
-      res.end();
-    }
+      groqRes.body.on('end', () => {
+        buffer += decoder.end();
+        if (buffer.trim()) {
+          flushLine(buffer);
+        }
+        resolve();
+      });
+
+      groqRes.body.on('error', (error) => reject(error));
+    });
   } catch (err) {
     console.error('Chat error:', err);
     if (!res.headersSent) {
       res.status(500).json({ error: err.message });
     }
+  } finally {
+    res.write('data: [DONE]\n\n');
+    res.flush?.();
+    res.end();
   }
 }
