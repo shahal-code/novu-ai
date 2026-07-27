@@ -18,20 +18,31 @@ const MUSIC_KEYWORDS = ['music', 'song', 'sing', 'lyrics', 'guitar', 'piano', 'b
 export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenProps) {
   const [value, setValue] = useState('');
 
+  const typedTopic = useMemo(() => {
+    const query = value.trim().toLowerCase();
+    if (!query) return null;
+
+    if (CODING_KEYWORDS.some((k) => query.includes(k))) return 'coding';
+    if (MUSIC_KEYWORDS.some((k) => query.includes(k))) return 'music';
+    return 'general';
+  }, [value]);
+
   const interest = useMemo(() => {
+    if (typedTopic) return typedTopic;
+
     let codingScore = 0;
     let musicScore = 0;
 
     for (const conv of conversations) {
       const title = (conv.title || '').toLowerCase();
-      if (CODING_KEYWORDS.some(k => title.includes(k))) codingScore++;
-      if (MUSIC_KEYWORDS.some(k => title.includes(k))) musicScore++;
+      if (CODING_KEYWORDS.some((k) => title.includes(k))) codingScore++;
+      if (MUSIC_KEYWORDS.some((k) => title.includes(k))) musicScore++;
     }
 
     if (codingScore > musicScore && codingScore > 0) return 'coding';
     if (musicScore > codingScore && musicScore > 0) return 'music';
     return 'general';
-  }, [conversations]);
+  }, [conversations, typedTopic]);
 
   const SUGGESTIONS = {
     coding: [

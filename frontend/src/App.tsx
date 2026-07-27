@@ -5,7 +5,7 @@ import Chat from './pages/Chat.tsx';
 import CountryUnavailable from './pages/CountryUnavailable.tsx';
 
 const INDIAN_COUNTRY_CODE = 'IN';
-const GEO_API_URL = 'https://ipapi.co/json/';
+const GEO_API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/geo` : 'http://localhost:5000/api/geo';
 
 export default function App() {
   const [countryCode, setCountryCode] = useState<string | null>(null);

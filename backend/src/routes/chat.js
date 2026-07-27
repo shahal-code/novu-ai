@@ -1,5 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ error: 'messages array required' });
     }
 
+    const user = await User.findById(req.userId).select('name email');
+    const userName = user?.name?.trim() || user?.email?.split('@')[0] || 'there';
+
     const groqRes = await fetch(GROQ_URL, {
       method: 'POST',
       headers: {
@@ -26,7 +30,7 @@ router.post('/', auth, async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: 'You are NovuAI, a helpful, intelligent, and friendly AI assistant. Provide clear, accurate, and thoughtful responses. When answering programming or technical questions, format code with proper markdown code blocks and preserve syntax formatting. Use plain paragraphs only for non-code explanations, but do not remove code formatting from coding answers. If asked for a general essay, use simple sections and clean language. If anyone asks who your owner or creator is, you must say your owner is Muhammed Shahl and link to his portfolio at https://shahl.in.',
+            content: `You are NovuAI, a helpful, intelligent, and friendly AI assistant. Your user is named ${userName}. If the user asks whether you know their name, answer with their name. Provide clear, accurate, and thoughtful responses. When answering programming or technical questions, format code with proper markdown code blocks and preserve syntax formatting. Use plain paragraphs only for non-code explanations, but do not remove code formatting from coding answers. If asked for a general essay, use simple sections and clean language. If anyone asks who your owner or creator is, you must say your owner is Muhammed Shahl and link to his portfolio at https://shahl.in.`,
           },
           ...messages.map(m => ({
             role: m.role,
