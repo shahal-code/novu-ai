@@ -23,13 +23,13 @@ export default function Chat() {
   // ---- Auth guard ----
   useEffect(() => {
     if (!auth.isLoggedIn()) {
-      navigate('/');
+      navigate('/', { replace: true });
       return;
     }
     auth.me().then((data) => {
       if (!data) {
         auth.logout();
-        navigate('/');
+        navigate('/', { replace: true });
       }
     });
 

@@ -36,7 +36,7 @@ export default function Auth() {
   }, [navigate, params]);
 
   useEffect(() => {
-    if (auth.isLoggedIn()) auth.me().then((data) => { if (data) navigate('/chat'); });
+    if (auth.isLoggedIn()) auth.me().then((data) => { if (data) navigate('/chat', { replace: true }); });
   }, [navigate]);
 
   const run = async (work: () => Promise<void>) => {
@@ -51,14 +51,14 @@ export default function Auth() {
   };
   const verifyEmailCode = (event: FormEvent) => {
     event.preventDefault();
-    void run(async () => { await auth.verifyEmailOtp(email, code); navigate('/chat'); });
+    void run(async () => { await auth.verifyEmailOtp(email, code); navigate('/chat', { replace: true }); });
   };
   const submitPassword = (event: FormEvent) => {
     event.preventDefault();
     void run(async () => {
       if (isCreatingPassword) await auth.register(email, password);
       else await auth.login(email, password);
-      navigate('/chat');
+      navigate('/chat', { replace: true });
     });
   };
   const goBack = () => { setError(''); setNotice(''); setCode(''); setScreen('start'); };
