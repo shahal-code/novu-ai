@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import NovuLiveLogo from './NovuLiveLogo';
 
 export interface Message {
@@ -312,8 +312,15 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  useLayoutEffect(() => {
+    const node = bottomRef.current;
+    if (!node) return;
+
+    const frame = requestAnimationFrame(() => {
+      node.scrollIntoView({ behavior: 'auto', block: 'end' });
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, [messages, isTyping]);
 
   const handleCopyCode = async (code: string, blockId: string) => {
@@ -389,23 +396,25 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8" role="log" aria-live="polite">
-      {messages.map((msg) => (
-        <div
-          key={msg.id}
-          className={`mb-6 flex w-full items-end gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-message-pop`}
-        >
-          {msg.role === 'assistant' && (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center" aria-hidden="true">
-              <NovuLiveLogo className="h-full w-full" />
-            </div>
-          )}
+    <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-end px-4 py-8" role="log" aria-live="polite">
+      <div className="flex-1">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`mb-6 flex w-full items-end gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-message-pop`}
+          >
+            {msg.role === 'assistant' && (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center" aria-hidden="true">
+                <NovuLiveLogo className="h-full w-full" />
+              </div>
+            )}
 
-          <div className={`max-w-[85%] px-5 py-3.5 text-[15px] leading-relaxed ${msg.role === 'user' ? 'bubble-me' : 'bubble-them'}`}>
-            {renderContent(msg.content, msg.id)}
+            <div className={`max-w-[85%] px-5 py-3.5 text-[15px] leading-relaxed ${msg.role === 'user' ? 'bubble-me' : 'bubble-them'}`}>
+              {renderContent(msg.content, msg.id)}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {isTyping && <TypingIndicator />}
       <div ref={bottomRef} className="h-4" />

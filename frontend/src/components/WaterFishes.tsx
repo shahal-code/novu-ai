@@ -19,10 +19,10 @@ export default function WaterFishes({ count = 3 }: { count?: number }) {
       id: i,
       y: 60 + Math.random() * 30, // swim in the lower 60-90% area (under the water)
       size: 0.6 + Math.random() * 0.8, // size scale 0.6x to 1.4x
-      duration: 3 + Math.random() * 4, // swim across fast (3-7s)
+      duration: 7 + Math.random() * 6, // swim across slower (7-13s)
       delay: Math.random() * 5, // stagger start times closer together
       direction: Math.random() > 0.5 ? 1 : -1,
-      wobbleSpeed: 0.5 + Math.random() * 0.5, // 0.5-1.0s fast tail wag cycle
+      wobbleSpeed: 1.2 + Math.random() * 0.8, // slower tail wag cycle
     }));
     setFishes(generated as Fish[]);
   }, [count]);

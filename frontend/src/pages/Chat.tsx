@@ -15,6 +15,7 @@ export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [suggestionText, setSuggestionText] = useState<string>('');
   const [loadingMsgs, setLoadingMsgs] = useState<boolean>(false);
+  const ACTIVE_CONVERSATION_KEY = 'novuai_active_conversation';
   const [logoStatus, setLogoStatus] = useState<'idle' | 'covering' | 'looking' | 'typing' | 'thinking' | 'success' | 'greeting'>('greeting');
   const navigate = useNavigate();
   const abortRef = useRef<AbortController | null>(null);
@@ -67,16 +68,27 @@ export default function Chat() {
 
   const handleSelectConversation = useCallback((id: string) => {
     setActiveId(id);
+    localStorage.setItem(ACTIVE_CONVERSATION_KEY, id);
     loadMessages(id);
     setSuggestionText('');
   }, [loadMessages]);
 
   const handleNewChat = useCallback(() => {
     setActiveId(null);
+    localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     setMessages([]);
     setSuggestionText('');
     setSidebarOpen(false);
   }, []);
+
+  useEffect(() => {
+    if (!activeId && conversations.length > 0) {
+      const storedId = localStorage.getItem(ACTIVE_CONVERSATION_KEY);
+      if (storedId && conversations.some((conv) => conv.id === storedId)) {
+        handleSelectConversation(storedId);
+      }
+    }
+  }, [activeId, conversations, handleSelectConversation]);
 
   // ---- Send message ----
   const handleSend = useCallback(async (text: string) => {
@@ -95,6 +107,7 @@ export default function Chat() {
         const newConv = await convApi.create(text);
         convId = newConv.id;
         setActiveId(convId);
+        localStorage.setItem(ACTIVE_CONVERSATION_KEY, convId);
       } catch {
         return;
       }
@@ -233,12 +246,12 @@ export default function Chat() {
             <p className="text-sm font-medium text-zinc-400">Loading messages...</p>
           </div>
         ) : messages.length === 0 && !isTyping ? (
-          <div className="flex-1 overflow-y-auto safe-bottom">
+          <div className="flex-1 min-h-0 overflow-y-auto safe-bottom">
             <WelcomeScreen conversations={conversations} onSend={handleSend} />
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto safe-bottom">
+            <div className="flex-1 min-h-0 overflow-y-auto safe-bottom">
               <MessageList
                 messages={messages}
                 isTyping={isTyping}
