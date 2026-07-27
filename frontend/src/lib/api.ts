@@ -122,6 +122,13 @@ export const conversations = {
     });
   },
 
+  async rename(id: string, title: string): Promise<Conversation> {
+    return request<Conversation>(`/api/conversations/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ title }),
+    });
+  },
+
   async getMessages(id: string): Promise<Message[]> {
     return request<Message[]>(`/api/conversations/${id}/messages`);
   },

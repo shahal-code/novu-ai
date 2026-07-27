@@ -72,6 +72,33 @@ router.get('/:id/messages', async (req, res) => {
   }
 });
 
+// PATCH /api/conversations/:id — rename conversation
+router.patch('/:id', async (req, res) => {
+  try {
+    const { title } = req.body;
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    const conversation = await Conversation.findOne({
+      _id: req.params.id,
+      userId: req.userId,
+    });
+    if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
+
+    conversation.title = title.length > 50 ? `${title.slice(0, 47)}…` : title;
+    conversation.updatedAt = new Date();
+    await conversation.save();
+
+    res.json({
+      id: conversation._id.toString(),
+      title: conversation.title,
+      created_at: conversation.createdAt,
+      updated_at: conversation.updatedAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // POST /api/conversations/:id/messages — save a message
 router.post('/:id/messages', async (req, res) => {
   try {

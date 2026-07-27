@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Edit3, Moon, Sun, Save, X } from 'lucide-react';
 import NovuLiveLogo from './NovuLiveLogo';
 import { useTheme } from '../context/ThemeContext';
 import WaterBubbles from './WaterBubbles';
@@ -20,6 +20,7 @@ interface SidebarProps {
   logoStatus: 'idle' | 'covering' | 'looking' | 'typing' | 'thinking' | 'success' | 'greeting';
   onSelect: (id: string) => void;
   onNewChat: () => void;
+  onRename: (id: string, title: string) => Promise<void>;
   isOpen: boolean;
   onClose: () => void;
   onSignOut: () => void;
@@ -53,13 +54,41 @@ export default function Sidebar({
   logoStatus,
   onSelect,
   onNewChat,
+  onRename,
   isOpen,
   onClose,
   onSignOut,
 }: SidebarProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const grouped = groupConversations(conversations);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const filtered = conversations.filter((conv) =>
+    conv.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+  const grouped = groupConversations(filtered);
   const { darkMode, toggleTheme } = useTheme();
+
+  const handleStartRename = (conv: Conversation) => {
+    setRenamingId(conv.id);
+    setRenameValue(conv.title);
+  };
+
+  const handleCancelRename = () => {
+    setRenamingId(null);
+    setRenameValue('');
+  };
+
+  const handleConfirmRename = async () => {
+    if (!renamingId || !renameValue.trim()) {
+      handleCancelRename();
+      return;
+    }
+
+    await onRename(renamingId, renameValue.trim());
+    setRenamingId(null);
+    setRenameValue('');
+  };
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === overlayRef.current) onClose();
@@ -84,29 +113,41 @@ export default function Sidebar({
         <div style={{position:'absolute',width:'120px',height:'80px',bottom:'35%',left:'10%',background:'radial-gradient(ellipse,rgba(94,234,212,0.15),transparent 70%)',filter:'blur(14px)',borderRadius:'50%',pointerEvents:'none',animation:'causticShift 9s ease-in-out infinite',zIndex:1}} />
         <div style={{position:'absolute',width:'90px',height:'60px',bottom:'20%',right:'5%',background:'radial-gradient(ellipse,rgba(45,212,191,0.12),transparent 70%)',filter:'blur(12px)',borderRadius:'50%',pointerEvents:'none',animation:'causticShift 12s ease-in-out infinite reverse',zIndex:1}} />
         {/* Single top wave */}
-        <WaterWave style={{ top: 'calc(40% + 38.4px)' }} />
+        <WaterWave style={{ top: 'calc(40% + 2.4rem)' }} />
         {/* Rising glass bubbles on click */}
         <WaterBubbles />
         {/* Swimming small glass fishes */}
         <WaterFishes count={2} />
         {/* Starfish and Jellyfish */}
         <SeaDecorations />
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center">
-              <NovuLiveLogo status={logoStatus} className="h-full w-full shadow-sm rounded-xl" />
-            </span>
-            <span className="font-display text-lg font-extrabold text-white">NovuAI</span>
+        <div className="flex flex-col gap-3 p-4 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center">
+                <NovuLiveLogo status={logoStatus} className="h-full w-full shadow-sm rounded-xl" />
+              </span>
+              <span className="font-display text-lg font-extrabold text-white">NovuAI</span>
+            </div>
+            <button
+              className="md:hidden p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white rounded-md transition-colors"
+              onClick={onClose}
+              aria-label="Close sidebar"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                <path d="M15 5L5 15M5 5l10 10" strokeWidth="1.75" strokeLinecap="round" />
+              </svg>
+            </button>
           </div>
-          <button
-            className="md:hidden p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white rounded-md transition-colors"
-            onClick={onClose}
-            aria-label="Close sidebar"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-              <path d="M15 5L5 15M5 5l10 10" strokeWidth="1.75" strokeLinecap="round" />
-            </svg>
-          </button>
+          <div className="relative">
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search conversations"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-teal-400 focus:outline-none"
+              aria-label="Search conversations"
+            />
+          </div>
         </div>
 
         <div className="p-3">
@@ -123,7 +164,7 @@ export default function Sidebar({
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label="Chat history">
-          {conversations.length === 0 ? (
+          {conversations.filter((conv) => conv.title.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
             <div className="flex flex-col items-center justify-center pt-8 text-center text-zinc-500">
               <svg className="mb-2 h-8 w-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -137,20 +178,68 @@ export default function Sidebar({
                 <p className="mb-1 px-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">{label}</p>
                 <div className="space-y-0.5">
                   {items.map((conv) => (
-                    <button
+                    <div
                       key={conv.id}
-                      className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors ${conv.id === activeId
-                          ? 'bg-white/20 text-white font-medium'
-                          : 'text-zinc-400 hover:bg-white/10 hover:text-white'
-                        }`}
-                      onClick={() => { onSelect(conv.id); onClose(); }}
-                      title={conv.title}
+                      className={`rounded-lg px-2 py-2 transition-colors ${conv.id === activeId
+                        ? 'bg-white/10 text-white'
+                        : 'text-zinc-400 hover:bg-white/10 hover:text-white'
+                      }`}
                     >
-                      <svg className="h-4 w-4 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                      <span className="truncate">{conv.title}</span>
-                    </button>
+                      {renamingId === conv.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            className="flex-1 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-teal-400"
+                            aria-label="Rename conversation"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleConfirmRename();
+                              if (e.key === 'Escape') handleCancelRename();
+                            }}
+                          />
+                          <button
+                            className="rounded-lg p-2 text-teal-300 hover:bg-white/10"
+                            onClick={handleConfirmRename}
+                            aria-label="Save conversation title"
+                          >
+                            <Save className="h-4 w-4" />
+                          </button>
+                          <button
+                            className="rounded-lg p-2 text-zinc-300 hover:bg-white/10"
+                            onClick={handleCancelRename}
+                            aria-label="Cancel rename"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex w-full items-center justify-between gap-2 text-sm">
+                          <button
+                            className="flex min-w-0 flex-1 items-center gap-2 text-left text-zinc-400 hover:text-white"
+                            onClick={() => { onSelect(conv.id); onClose(); }}
+                            title={conv.title}
+                            type="button"
+                          >
+                            <svg className="h-4 w-4 shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <span className="truncate">{conv.title}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg p-2 text-zinc-300 hover:bg-white/10 hover:text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartRename(conv);
+                            }}
+                            aria-label="Rename conversation"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { Conversation } from '../lib/api';
-import { Plus, Mic, Newspaper, PenLine, Sparkles, Code, Terminal, Palette, Music, AudioLines, Headphones } from 'lucide-react';
+import { ArrowRight, Plus, Mic, Newspaper, PenLine, Sparkles, Code, Terminal, Palette, Music, AudioLines, Headphones } from 'lucide-react';
 import NovuLiveLogo from './NovuLiveLogo';
 import WaterBubbles from './WaterBubbles';
 import WaterWave from './WaterWave';
@@ -92,14 +92,26 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
           className="auth-field w-full !pl-12 !pr-[90px] py-3.5 text-[15px]"
         />
         <div className="absolute right-3 flex items-center gap-2 z-10">
-          <button className="text-zinc-400 hover:text-white transition-colors p-1" title="Voice Input">
-             <Mic className="h-5 w-5" />
-          </button>
-          <div className="h-4 w-px bg-zinc-600" />
-          <button className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider pl-1 pr-1">
-            <AudioLines className="h-4 w-4" />
-            Voice
-          </button>
+          {value.trim().length > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                const text = value.trim();
+                if (text) {
+                  onSend(text);
+                  setValue('');
+                }
+              }}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow-sm hover:-translate-y-[1px] transition-transform"
+              title="Send message"
+            >
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          ) : (
+            <button className="text-zinc-400 hover:text-white transition-colors p-1" title="Voice Input">
+              <Mic className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
 

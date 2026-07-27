@@ -120,7 +120,7 @@ export default function Chat() {
 
     const tempAiId = `temp-ai-${Date.now()}`;
     let aiContent = '';
-    setMessages((prev) => [...prev, { id: tempAiId, role: 'assistant', content: '' }]);
+    let assistantAdded = false;
     setIsTyping(true);
 
     abortRef.current?.abort();
@@ -132,18 +132,26 @@ export default function Chat() {
         history.map((m) => ({ role: m.role, content: m.content })),
         (text) => {
           aiContent += text;
-          setMessages((prev) =>
-            prev.map((m) => (m.id === tempAiId ? { ...m, content: aiContent } : m)),
-          );
+          setMessages((prev) => {
+            if (!assistantAdded) {
+              assistantAdded = true;
+              return [...prev, { id: tempAiId, role: 'assistant', content: aiContent }];
+            }
+            return prev.map((m) => (m.id === tempAiId ? { ...m, content: aiContent } : m));
+          });
         },
         controller.signal,
       );
     } catch (err: unknown) {
       if ((err as Error).name !== 'AbortError') {
         aiContent = 'Sorry, something went wrong. Please try again.';
-        setMessages((prev) =>
-          prev.map((m) => (m.id === tempAiId ? { ...m, content: aiContent } : m)),
-        );
+        setMessages((prev) => {
+          if (!assistantAdded) {
+            assistantAdded = true;
+            return [...prev, { id: tempAiId, role: 'assistant', content: aiContent }];
+          }
+          return prev.map((m) => (m.id === tempAiId ? { ...m, content: aiContent } : m));
+        });
       }
     } finally {
       setIsTyping(false);
@@ -174,6 +182,14 @@ export default function Chat() {
         logoStatus={logoStatus}
         onSelect={handleSelectConversation}
         onNewChat={handleNewChat}
+        onRename={async (id, title) => {
+          try {
+            await convApi.rename(id, title);
+            await loadConversations();
+          } catch {
+            // ignore rename failure for now
+          }
+        }}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onSignOut={() => { auth.logout(); navigate('/'); }}
