@@ -7,7 +7,6 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/auth.js';
 import conversationRoutes from './routes/conversations.js';
 import chatRoutes from './routes/chat.js';
-import geoRoutes from './routes/geo.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,7 +22,6 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/geo', geoRoutes);
 
 // Health check (for Uptime Robot)
 app.get('/health', (req, res) => {
