@@ -234,7 +234,6 @@ html, body {
    SIDEBAR — water glass panel
    ============================================= */
 .sidebar-glass {
-  position: relative;
   overflow: hidden;
 
   /* Glass + water fill, waterline at ~52% */
