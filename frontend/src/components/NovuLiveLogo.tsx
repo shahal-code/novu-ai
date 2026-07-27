@@ -73,6 +73,21 @@ export default function NovuLiveLogo({ status = 'idle', className = "" }: NovuLi
         .novu-live-logo .right-hand {
           transform: translate(-34px, 64px) rotate(18deg) scale(0.9);
         }
+        .novu-live-logo.is-greeting .right-hand {
+          opacity: 1;
+          animation: novuWave 1.15s ease-in-out infinite;
+          transform: translate(-3px, -4px) rotate(8deg) scale(0.94);
+        }
+        .novu-live-logo.is-greeting .left-hand {
+          opacity: 0.7;
+          transform: translate(2px, 6px) rotate(-12deg) scale(0.92);
+        }
+        .novu-live-logo.is-thinking .eye-group {
+          transform: translate(6px, -4px);
+        }
+        .novu-live-logo.is-thinking .smile {
+          animation-duration: 1.8s;
+        }
         .novu-live-logo.is-covering .eye,
         .novu-live-logo.is-covering .eye-highlight {
           animation: none;
@@ -111,6 +126,10 @@ export default function NovuLiveLogo({ status = 'idle', className = "" }: NovuLi
         @keyframes novuShine {
           0%, 100% { opacity: 0.65; transform: translateY(0px); }
           50% { opacity: 1; transform: translateY(-6px); }
+        }
+        @keyframes novuWave {
+          0%, 100% { transform: translate(-3px, -4px) rotate(8deg) scale(0.94); }
+          50% { transform: translate(-10px, -10px) rotate(-15deg) scale(0.98); }
         }
       `}</style>
 

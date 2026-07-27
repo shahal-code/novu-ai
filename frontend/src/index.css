@@ -1,0 +1,529 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap");
+@import "tailwindcss";
+
+/* =============================================
+   RESET & BASE
+   ============================================= */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  background-color: #020d10;
+  color: #e2faf8;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --app-bg: #020d10;
+  --app-surface: rgba(4, 28, 32, 0.75);
+  --app-surface-solid: rgba(6, 30, 34, 0.90);
+  --app-surface-alt: rgba(8, 40, 44, 0.60);
+  --app-border: rgba(94, 234, 212, 0.15);
+  --app-strong: #e2faf8;
+  --app-muted: #5eead4;
+  --app-primary: #14b8a6;
+  --app-primary-hover: #2dd4bf;
+  --app-primary-soft: rgba(20, 184, 166, 0.20);
+  --app-danger: #f43f5e;
+  --app-gradient: linear-gradient(135deg, #0f766e 0%, #14b8a6 60%, #2dd4bf 100%);
+  --app-shadow: 0 8px 32px rgba(0, 0, 0, 0.60);
+  --water: rgba(20, 184, 166, 0.22);
+  --water-deep: rgba(6, 78, 59, 0.35);
+  --water-glow: rgba(45, 212, 191, 0.30);
+}
+
+@theme {
+  --color-primary: var(--app-primary);
+  --color-primary-hover: var(--app-primary-hover);
+}
+
+/* =============================================
+   KEYFRAMES
+   ============================================= */
+@keyframes waveScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes causticShift {
+  0%   { transform: translate(0,0) scale(1) rotate(0deg);     opacity: 0.45; }
+  33%  { transform: translate(5%,-4%) scale(1.12) rotate(5deg);  opacity: 0.65; }
+  66%  { transform: translate(-4%,6%) scale(0.88) rotate(-4deg); opacity: 0.30; }
+  100% { transform: translate(0,0) scale(1) rotate(0deg);     opacity: 0.45; }
+}
+
+@keyframes bubbleRise {
+  0%   { transform: translateY(0)      scale(1);    opacity: 0.75; }
+  15%  { transform: translateY(-10px)  scale(1.05);               }
+  50%  { transform: translateY(-55px)  scale(1.08);               }
+  85%  { transform: translateY(-115px) scale(1.12); opacity: 0.35; }
+  100% { transform: translateY(-145px) scale(1.18); opacity: 0;   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(15px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes messagePop {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+.animate-fade-in     { animation: fadeIn 0.3s ease-out forwards; }
+.animate-slide-in    { animation: slideIn 0.3s ease-out forwards; }
+.animate-message-pop { animation: messagePop 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-float       { animation: float 6s ease-in-out infinite; }
+
+/* =============================================
+   FULL PAGE SCENE BACKGROUND
+   Deep ocean dark with caustic light pools
+   ============================================= */
+.auth-bg {
+  position: relative;
+  isolation: isolate;
+  background-color: #020d10;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 18% 18%, rgba(20, 184, 166, 0.30) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 40% at 82% 82%, rgba(6, 78, 59, 0.32) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 35% at 55% 42%, rgba(8, 145, 178, 0.14) 0%, transparent 100%),
+    radial-gradient(ellipse 30% 30% at 10% 78%, rgba(2, 132, 199, 0.10) 0%, transparent 100%),
+    radial-gradient(ellipse 35% 30% at 90% 12%, rgba(15, 118, 110, 0.20) 0%, transparent 100%);
+  overflow: hidden;
+}
+
+/* Drifting ambient caustic orbs in the background */
+.auth-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle 350px at 28% 62%, rgba(20, 184, 166, 0.09), transparent),
+    radial-gradient(circle 450px at 72% 28%, rgba(6, 182, 212, 0.07), transparent);
+  animation: causticShift 14s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* =============================================
+   THE WATER-GLASS PANEL
+   Core visual: glass container filled with water
+   Upper portion = glass/air (translucent, lighter)
+   Lower portion = liquid (teal, saturated, with wave)
+   ============================================= */
+
+/* Auth Dialog — the main card */
+.auth-dialog {
+  position: relative;
+  overflow: hidden;
+
+  /* GLASS + WATER FILL gradient:
+     Top ~42%  → clear glass (dark, cool)
+     42%       → wave waterline
+     42%–100%  → water (teal, saturated, glowing) */
+  background:
+    /* Glass top catch-light */
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.18)  0%,
+      rgba(255, 255, 255, 0.07) 12%,
+      rgba(255, 255, 255, 0.00) 30%
+    ),
+    /* Water fill — bottom 60% */
+    linear-gradient(180deg,
+      transparent                     38%,
+      rgba(20, 184, 166, 0.18)        45%,
+      rgba(20, 184, 166, 0.30)        65%,
+      rgba(6,  78,  59,  0.42)       100%
+    ),
+    /* Base glass tint */
+    rgba(4, 22, 26, 0.70);
+
+  backdrop-filter: blur(36px) saturate(170%);
+  -webkit-backdrop-filter: blur(36px) saturate(170%);
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 24px;
+
+  box-shadow:
+    0   0  80px rgba(20, 184, 166, 0.18),   /* outer teal glow */
+    0  40px 100px rgba(0, 0, 0, 0.65),       /* deep shadow */
+    inset 0  2px  0 rgba(255,255,255,0.28),  /* top rim highlight */
+    inset 0 -2px  0 rgba(0,0,0,0.30),        /* bottom rim shadow */
+    inset 0 60px 80px -20px rgba(20,184,166,0.06); /* inner water glow */
+
+  color: #fff;
+  isolation: isolate;
+}
+
+/* TOP RIM — bright glass edge */
+.auth-dialog::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 8%; right: 8%;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.55) 20%,
+    rgba(200,255,248,1.00) 50%,
+    rgba(255,255,255,0.55) 80%,
+    transparent 100%
+  );
+  z-index: 20;
+  border-radius: 0 0 4px 4px;
+  pointer-events: none;
+}
+
+/* Wave is now rendered by the WaterWave React component */
+/* auth-dialog::after removed */
+
+/* CAUSTIC LIGHT SPOTS inside water */
+.auth-caustic-1 {
+  position: absolute;
+  width: 200px; height: 130px;
+  top: 52%; left: 8%;
+  background: radial-gradient(ellipse, rgba(94,234,212,0.28), transparent 70%);
+  filter: blur(20px);
+  border-radius: 50%;
+  animation: causticShift 7s ease-in-out infinite;
+  z-index: 5;
+  pointer-events: none;
+}
+.auth-caustic-2 {
+  position: absolute;
+  width: 150px; height: 100px;
+  top: 65%; right: 6%;
+  background: radial-gradient(ellipse, rgba(45,212,191,0.22), transparent 70%);
+  filter: blur(16px);
+  border-radius: 50%;
+  animation: causticShift 11s ease-in-out infinite reverse;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* RISING BUBBLES */
+.water-bubble {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0.04));
+  pointer-events: none;
+  animation: bubbleRise linear infinite;
+}
+
+/* =============================================
+   SIDEBAR — water glass panel
+   ============================================= */
+.sidebar-glass {
+  position: relative;
+  overflow: hidden;
+
+  /* Glass + water fill, waterline at ~52% */
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255, 0.14)  0%,
+      rgba(255,255,255, 0.05) 10%,
+      rgba(255,255,255, 0.00) 26%
+    ),
+    linear-gradient(180deg,
+      transparent                  47%,
+      rgba(20,184,166, 0.14)      55%,
+      rgba(20,184,166, 0.24)      75%,
+      rgba(6, 78, 59,  0.36)     100%
+    ),
+    rgba(3, 18, 20, 0.78);
+
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    inset -1px 0 0 rgba(255,255,255,0.06),
+    inset  0  2px 0 rgba(255,255,255,0.20),
+    6px 0 50px rgba(0,0,0,0.50),
+    inset 0 80px 120px -40px rgba(20,184,166,0.05);
+
+  color: #fff;
+}
+
+/* Sidebar wave is now rendered by the WaterWave React component */
+/* sidebar-glass::after removed */
+
+/* =============================================
+   INPUT BOX — water glass
+   ============================================= */
+.input-glass {
+  position: relative;
+  overflow: hidden;
+
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255, 0.12)  0%,
+      rgba(255,255,255, 0.04) 22%,
+      rgba(20,184,166,  0.08) 55%,
+      rgba(20,184,166,  0.18) 100%
+    ),
+    rgba(3, 20, 22, 0.68);
+
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 28px;
+
+  box-shadow:
+    0   0 50px rgba(20,184,166,0.12),
+    0  16px 50px rgba(0,0,0,0.50),
+    inset 0  2px  0 rgba(255,255,255,0.24),
+    inset 0 -1px  0 rgba(0,0,0,0.28);
+
+  transition: border-color 200ms, box-shadow 200ms;
+}
+
+.input-glass:focus-within {
+  border-color: rgba(94, 234, 212, 0.60);
+  box-shadow:
+    0   0  70px rgba(20,184,166,0.22),
+    0  16px 50px rgba(0,0,0,0.50),
+    inset 0  2px  0 rgba(255,255,255,0.24),
+    inset 0 -1px  0 rgba(0,0,0,0.28),
+    0   0   0  3px rgba(20,184,166,0.18);
+}
+
+/* Top rim shine */
+.input-glass::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1.5px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.55) 30%,
+    rgba(200,255,248,0.90) 50%,
+    rgba(255,255,255,0.55) 70%,
+    transparent 100%
+  );
+  border-radius: 28px 28px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* =============================================
+   MESSAGE BUBBLES
+   ============================================= */
+.bubble-me {
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 55%, #2dd4bf 100%);
+  color: #fff;
+  border-radius: 18px 18px 4px 18px;
+  box-shadow:
+    0 4px 22px rgba(20,184,166,0.38),
+    inset 0 1px 0 rgba(255,255,255,0.28);
+}
+
+.bubble-them {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255, 0.13)  0%,
+      rgba(255,255,255, 0.04) 20%,
+      rgba(20,184,166,  0.10) 60%,
+      rgba(20,184,166,  0.22) 100%
+    ),
+    rgba(4, 24, 26, 0.62);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: #dffaf7;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 18px 18px 18px 4px;
+  box-shadow:
+    0   0 28px rgba(20,184,166,0.10),
+    0   4px 16px rgba(0,0,0,0.32),
+    inset 0  1px 0 rgba(255,255,255,0.18),
+    inset 0 -1px 0 rgba(0,0,0,0.22);
+}
+
+.bubble-them::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.42) 40%,
+    rgba(200,255,248,0.72) 50%,
+    rgba(255,255,255,0.42) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* =============================================
+   TYPOGRAPHY
+   ============================================= */
+h1, h2, h3, .font-display {
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+
+/* =============================================
+   BUTTONS & FORM ELEMENTS
+   ============================================= */
+.btn-primary {
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  color: #fff;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 22px rgba(20,184,166,0.38), inset 0 1px 0 rgba(255,255,255,0.22);
+  border: none;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(20,184,166,0.48), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+.auth-provider,
+.auth-continue,
+.auth-field {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 999px;
+  font-size: 14px;
+  transition: border-color 160ms, background 160ms, transform 160ms, box-shadow 160ms;
+}
+
+.auth-provider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,0.13) 0%,
+      rgba(255,255,255,0.04) 40%,
+      rgba(20,184,166,0.07) 100%
+    ),
+    rgba(4, 24, 26, 0.50);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 4px 18px rgba(0,0,0,0.20);
+  color: #e2faf8;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-provider:hover {
+  border-color: rgba(94,234,212,0.55);
+  background: rgba(20,184,166,0.14);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.20), 0 6px 26px rgba(20,184,166,0.22);
+}
+
+.auth-field {
+  display: block;
+  box-sizing: border-box;
+  border: 1px solid rgba(255,255,255,0.20);
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,0.08) 0%,
+      rgba(20,184,166,0.06) 50%,
+      rgba(20,184,166,0.14) 100%
+    ),
+    rgba(3, 18, 22, 0.65);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.30), inset 0 0 22px rgba(20,184,166,0.05);
+  backdrop-filter: blur(18px);
+  color: #fff;
+  padding: 0 16px;
+  outline: none;
+}
+
+.auth-field:focus {
+  border-color: rgba(94,234,212,0.72);
+  box-shadow:
+    0 0 0 3px rgba(20,184,166,0.20),
+    inset 0 1px 1px rgba(0,0,0,0.30),
+    0 0 32px rgba(20,184,166,0.14);
+}
+
+.auth-field::placeholder { color: rgba(94,234,212,0.50); }
+
+.auth-continue {
+  margin-top: 18px;
+  border: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(204,251,241,0.92) 100%);
+  color: #0f4c4a;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 22px rgba(20,184,166,0.32), inset 0 1px 0 rgba(255,255,255,0.85);
+}
+.auth-continue:hover:not(:disabled) {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(20,184,166,0.42);
+}
+.auth-continue:disabled { cursor: wait; opacity: 0.65; }
+
+.auth-label { display: block; margin: 0 0 7px 14px; color: #b2f5ea; font-size: 12px; font-weight: 600; }
+.auth-link  { color: #5eead4; font-size: 12px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.auth-link:hover { color: #fff; }
+.auth-robot { filter: drop-shadow(0 7px 16px rgba(20,216,192,0.42)); }
+
+/* =============================================
+   SCROLLBAR
+   ============================================= */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(94,234,212,0.28); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(94,234,212,0.50); }
+
+/* =============================================
+   PAGE & LAYOUT
+   ============================================= */
+.page-scroll {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.paper-sheet {
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+  background: transparent;
+  display: flex;
+  overflow: hidden;
+}
+
+.chat-wall { background-color: transparent; }
+
+/* utility classes kept for compatibility */
+.novu-input { background: rgba(6,30,34,0.7); border: 1px solid rgba(94,234,212,0.18); border-radius: 12px; color: #e2faf8; transition: all 0.2s; }
+.novu-input:focus { outline: none; border-color: #14b8a6; box-shadow: 0 0 0 3px rgba(20,184,166,0.18); }
+.glass-panel { background: rgba(4,24,28,0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 32px rgba(0,0,0,0.55); border-radius: 20px; }
+.novu-panel  { background: rgba(4,24,28,0.65); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
+.cut-out     { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; }
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}

@@ -40,7 +40,7 @@ async function request<T>(
 // ---- Auth ----
 export interface AuthResponse {
   token: string;
-  user: { id: string; email: string };
+  user: { id: string; email?: string; name?: string };
 }
 
 export const auth = {
@@ -62,7 +62,23 @@ export const auth = {
     return data;
   },
 
-  async me(): Promise<{ user: { id: string; email: string } } | null> {
+  async requestEmailOtp(email: string): Promise<{ message: string }> {
+    return request('/api/auth/email-otp/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async verifyEmailOtp(email: string, code: string): Promise<AuthResponse> {
+    const data = await request<AuthResponse>('/api/auth/email-otp/verify', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    });
+    setToken(data.token);
+    return data;
+  },
+
+  async me(): Promise<{ user: { id: string; email?: string; name?: string } } | null> {
     try {
       return await request('/api/auth/me');
     } catch {

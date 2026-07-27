@@ -20,9 +20,9 @@ function TypingIndicator() {
         <NovuLiveLogo className="h-full w-full" />
       </div>
       <div className="bubble-them flex items-center gap-1 px-4 py-3 min-h-[44px]">
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]"></span>
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]"></span>
-        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"></span>
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.3s]"></span>
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:-0.15s]"></span>
+        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400"></span>
       </div>
     </div>
   );
@@ -79,7 +79,7 @@ function renderInline(text: string): React.ReactNode[] {
   while ((m = inlineCodeRegex.exec(text)) !== null) {
     if (m.index > last) nodes.push(<span key={k++}>{text.slice(last, m.index)}</span>);
     nodes.push(
-      <code key={k++} className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[13px] text-teal-700 dark:bg-slate-800 dark:text-teal-300 border border-slate-200 dark:border-slate-700">
+      <code key={k++} className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[13px] text-teal-300 border border-white/10">
         {m[1]}
       </code>
     );

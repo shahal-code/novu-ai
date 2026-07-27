@@ -167,7 +167,7 @@ export default function Chat() {
 
 
   return (
-    <div className="paper-sheet flex-row">
+    <div className="paper-sheet flex-row auth-bg">
       <Sidebar
         conversations={conversations}
         activeId={activeId}
@@ -179,12 +179,12 @@ export default function Chat() {
         onSignOut={() => { auth.logout(); navigate('/'); }}
       />
 
-      <div className="flex flex-1 flex-col overflow-hidden chat-wall relative">
+      <div className="flex flex-1 flex-col overflow-hidden bg-transparent relative">
         {/* Header */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--app-border)] bg-[var(--app-surface-solid)] px-4 shadow-sm z-10">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-black/10 backdrop-blur-md px-4 shadow-sm z-10 text-white">
           <div className="flex items-center gap-3">
             <button
-              className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
             >
@@ -192,7 +192,7 @@ export default function Chat() {
                 <path d="M4 6h16M4 12h16M4 18h16" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </button>
-            <h1 className="font-display text-lg font-bold text-[var(--app-strong)] truncate max-w-[200px] sm:max-w-md">
+            <h1 className="font-display text-lg font-bold text-white truncate max-w-[200px] sm:max-w-md">
               {activeId
                 ? conversations.find((c) => c.id === activeId)?.title ?? 'Chat'
                 : 'New Chat'}
@@ -200,7 +200,7 @@ export default function Chat() {
           </div>
 
           <button
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-[var(--app-primary)] transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
             onClick={handleNewChat}
             aria-label="New chat"
           >
@@ -213,8 +213,8 @@ export default function Chat() {
         {/* Message List */}
         {loadingMsgs ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 safe-bottom">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-primary" />
-            <p className="text-sm font-medium text-slate-500">Loading messages...</p>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/10 border-t-teal-400" />
+            <p className="text-sm font-medium text-zinc-400">Loading messages...</p>
           </div>
         ) : messages.length === 0 && !isTyping ? (
           <div className="flex-1 overflow-y-auto safe-bottom">
@@ -230,7 +230,7 @@ export default function Chat() {
             </div>
             
             {/* Input Box */}
-            <div className="shrink-0 bg-gradient-to-t from-[var(--app-bg)] to-transparent pt-4">
+            <div className="shrink-0 bg-gradient-to-t from-[#060a0b] to-transparent pt-4">
               <InputBox
                 onSend={handleSend}
                 onTyping={(typing) => setLogoStatus(typing ? 'typing' : 'idle')}

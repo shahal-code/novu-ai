@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import type { Conversation } from '../lib/api';
 import { Plus, Mic, Newspaper, PenLine, Sparkles, Code, Terminal, Palette, Music, AudioLines, Headphones } from 'lucide-react';
 import NovuLiveLogo from './NovuLiveLogo';
+import WaterBubbles from './WaterBubbles';
+import WaterWave from './WaterWave';
 
 interface WelcomeScreenProps {
   conversations: Conversation[];
@@ -58,15 +60,23 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 w-full h-full animate-fade-in relative z-10">
-      <div className="mb-8 flex place-items-center">
-        <NovuLiveLogo status="greeting" className="h-24 w-24 shadow-xl shadow-emerald-500/20 rounded-3xl" />
-      </div>
-      <h2 className="mb-6 font-display text-2xl md:text-3xl font-medium text-slate-800 dark:text-slate-100 text-center">
-        What's on your mind today?
-      </h2>
+      <main className="auth-dialog relative w-full max-w-[500px] animate-fade-in px-5 py-10 sm:px-10 flex flex-col items-center">
+        {/* Caustic water light spots */}
+        <div className="auth-caustic-1" />
+        <div className="auth-caustic-2" />
+        {/* Single top wave line */}
+        <WaterWave />
+        {/* Rising glass bubbles on click */}
+        <WaterBubbles />
+        <div className="mb-6 flex flex-col items-center">
+          <NovuLiveLogo status="greeting" className="auth-robot mb-4 h-14 w-14 rounded-2xl" />
+          <h2 className="text-center text-3xl font-bold text-white">
+            What's on your mind today?
+          </h2>
+        </div>
 
-      <div className="w-full max-w-2xl relative flex items-center bg-[var(--app-surface-solid)] border border-[var(--app-border)] rounded-full shadow-sm hover:shadow-md transition-shadow focus-within:ring-2 focus-within:ring-[var(--app-primary-soft)] focus-within:border-[var(--app-primary)] mb-6">
-        <div className="pl-5 pr-3 text-slate-400">
+        <div className="w-full relative flex items-center mb-6">
+        <div className="absolute left-4 text-zinc-400 z-10">
           <Plus className="h-5 w-5" />
         </div>
         <input 
@@ -75,36 +85,37 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent py-3.5 text-[15px] text-slate-800 placeholder-slate-400 focus:outline-none dark:text-slate-100"
+          className="auth-field w-full pl-12 pr-24 py-3.5 text-[15px]"
         />
-        <div className="flex items-center gap-3 pr-5 pl-2">
-          <button className="text-slate-400 hover:text-[var(--app-primary)] transition-colors" title="Voice Input">
+        <div className="absolute right-3 flex items-center gap-2 z-10">
+          <button className="text-zinc-400 hover:text-white transition-colors p-1" title="Voice Input">
              <Mic className="h-5 w-5" />
           </button>
-          <div className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-          <button className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-[var(--app-primary)] transition-colors uppercase tracking-wider">
+          <div className="h-4 w-px bg-zinc-600" />
+          <button className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider pl-1 pr-1">
             <AudioLines className="h-4 w-4" />
             Voice
           </button>
         </div>
       </div>
 
-      <div className="w-full max-w-2xl flex flex-col gap-2 pl-4">
+      <div className="w-full flex flex-col gap-2.5">
         {activeSuggestions.map((sug) => (
           <button 
             key={sug.id}
             onClick={() => onSend(sug.text)}
-            className="flex items-center gap-4 py-2.5 px-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors text-left group w-fit"
+            className="auth-provider justify-start pl-6"
           >
-            <span className="text-slate-400 group-hover:text-[var(--app-primary)] transition-colors">
+            <span className="text-zinc-400">
               {sug.icon}
             </span>
-            <span className="text-[13px] text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-colors">
+            <span className="text-[14px]">
               {sug.text}
             </span>
           </button>
         ))}
       </div>
+      </main>
     </div>
   );
 }

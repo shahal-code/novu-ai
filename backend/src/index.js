@@ -1,11 +1,12 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
+import dotenv from 'dotenv';
+dotenv.config();
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
 
-const authRoutes = require('./routes/auth');
-const conversationRoutes = require('./routes/conversations');
-const chatRoutes = require('./routes/chat');
+import authRoutes from './routes/auth.js';
+import conversationRoutes from './routes/conversations.js';
+import chatRoutes from './routes/chat.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;

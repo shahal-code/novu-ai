@@ -50,10 +50,10 @@ export default function InputBox({ onSend, onTyping, disabled, initialValue = ''
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 pb-6">
-      <div className={`relative flex items-end w-full rounded-2xl bg-[var(--app-surface-solid)] border border-[var(--app-border)] shadow-sm transition-all focus-within:ring-2 focus-within:ring-[var(--app-primary-soft)] focus-within:border-[var(--app-primary)] ${disabled ? 'opacity-70' : ''}`}>
+      <div className={`input-glass relative flex items-end w-full ${disabled ? 'opacity-70' : ''}`}>
         <textarea
           ref={textareaRef}
-          className="w-full resize-none bg-transparent px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none dark:text-slate-100 min-h-[52px]"
+          className="w-full resize-none bg-transparent px-5 py-4 text-[15px] text-white placeholder-zinc-400 focus:outline-none min-h-[56px] rounded-[24px]"
           placeholder="Message NovuAI..."
           value={value}
           onChange={(e) => setValue(e.target.value)}
@@ -64,7 +64,7 @@ export default function InputBox({ onSend, onTyping, disabled, initialValue = ''
         />
 
         <button
-          className={`m-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all ${isEmpty || disabled ? 'bg-slate-100 text-slate-400 dark:bg-slate-800' : 'btn-primary'}`}
+          className={`m-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-[18px] transition-all ${isEmpty || disabled ? 'bg-white/10 text-zinc-500' : 'bg-white text-black hover:-translate-y-[1px]'}`}
           onClick={handleSend}
           disabled={isEmpty || disabled}
           aria-label="Send message"
@@ -80,7 +80,7 @@ export default function InputBox({ onSend, onTyping, disabled, initialValue = ''
           )}
         </button>
       </div>
-      <p className="mt-2 text-center text-[11px] text-slate-400">
+      <p className="mt-3 text-center text-xs text-zinc-500">
         NovuAI can make mistakes. Consider verifying important information.
       </p>
     </div>

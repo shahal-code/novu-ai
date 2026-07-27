@@ -7,6 +7,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Auth />} />
+        <Route path="/auth/callback" element={<Auth />} />
         <Route path="/chat" element={<Chat />} />
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
