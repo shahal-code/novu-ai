@@ -162,23 +162,37 @@ export async function streamChat(
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
+  let buffer = '';
+
+  const processLine = (line: string) => {
+    if (!line.startsWith('data: ')) return false;
+    const data = line.slice(6).trim();
+    if (data === '[DONE]') return true;
+    try {
+      const parsed = JSON.parse(data) as { text?: string };
+      if (parsed.text) onChunk(parsed.text);
+    } catch {
+      // skip incomplete or malformed chunks
+    }
+    return false;
+  };
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split('\n')) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') return;
-        try {
-          const parsed = JSON.parse(data) as { text?: string };
-          if (parsed.text) onChunk(parsed.text);
-        } catch {
-          // skip
-        }
-      }
+    buffer += decoder.decode(value, { stream: true });
+    let newlineIndex = buffer.indexOf('\n');
+
+    while (newlineIndex !== -1) {
+      const line = buffer.slice(0, newlineIndex).trim();
+      buffer = buffer.slice(newlineIndex + 1);
+      if (processLine(line)) return;
+      newlineIndex = buffer.indexOf('\n');
     }
+  }
+
+  if (buffer.trim()) {
+    processLine(buffer.trim());
   }
 }

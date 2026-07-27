@@ -25,32 +25,46 @@ export async function streamChat(req, res) {
 
     const reader = groqRes.body.getReader();
     const decoder = new TextDecoder();
+    let buffer = '';
+
+    const flushLine = (line) => {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('data: ')) return;
+      const jsonStr = trimmed.slice(6);
+      if (jsonStr === '[DONE]') return;
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const text = parsed?.choices?.[0]?.delta?.content ?? '';
+        if (text) {
+          res.write(`data: ${JSON.stringify({ text })}\n\n`);
+          res.flush?.();
+        }
+      } catch {
+        // skip malformed chunks
+      }
+    };
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        for (const line of chunk.split('\n')) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('data: ')) {
-            const jsonStr = trimmed.slice(6);
-            if (jsonStr === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const text = parsed?.choices?.[0]?.delta?.content ?? '';
-              if (text) {
-                res.write(`data: ${JSON.stringify({ text })}\n\n`);
-              }
-            } catch {
-              // skip malformed chunks
-            }
-          }
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex = buffer.indexOf('\n');
+        while (newlineIndex !== -1) {
+          const line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          flushLine(line);
+          newlineIndex = buffer.indexOf('\n');
         }
+      }
+
+      if (buffer.trim()) {
+        flushLine(buffer);
       }
     } finally {
       res.write('data: [DONE]\n\n');
+      res.flush?.();
       res.end();
     }
   } catch (err) {
