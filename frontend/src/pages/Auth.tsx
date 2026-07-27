@@ -23,6 +23,7 @@ export default function Auth() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
@@ -32,11 +33,24 @@ export default function Auth() {
     if (token) {
       setToken(token);
       navigate('/chat', { replace: true });
-    } else if (oauthError) setError(oauthError);
+      return;
+    }
+
+    if (oauthError) setError(oauthError);
   }, [navigate, params]);
 
   useEffect(() => {
-    if (auth.isLoggedIn()) auth.me().then((data) => { if (data) navigate('/chat', { replace: true }); });
+    if (!auth.isLoggedIn()) {
+      setSessionChecked(true);
+      return;
+    }
+
+    auth.me()
+      .then((data) => {
+        if (data) navigate('/chat', { replace: true });
+        else setSessionChecked(true);
+      })
+      .catch(() => setSessionChecked(true));
   }, [navigate]);
 
   const run = async (work: () => Promise<void>) => {
@@ -70,6 +84,17 @@ export default function Auth() {
     </div>
   );
   const noticeBlock = notice && <p className="mt-4 text-center text-xs text-teal-300">{notice}</p>;
+
+  if (!sessionChecked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#050708] text-white">
+        <div className="space-y-3 rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur-xl">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/10 border-t-cyan-400" />
+          <p className="text-sm text-zinc-300">Checking your session…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-scroll auth-bg flex min-h-full items-center justify-center p-4">
