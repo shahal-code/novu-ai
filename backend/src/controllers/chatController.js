@@ -1,4 +1,4 @@
-import { StringDecoder } from 'node:util';
+import { StringDecoder } from 'string_decoder';
 import User from '../models/User.js';
 import { buildChatPayload, createChatStream } from '../services/chatService.js';
 
