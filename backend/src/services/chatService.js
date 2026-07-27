@@ -25,6 +25,8 @@ export async function createChatStream(messages, userName) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'text/event-stream',
+      'Connection': 'keep-alive',
       Authorization: `Bearer ${GROQ_API_KEY}`,
     },
     body: JSON.stringify(buildChatPayload(messages, userName)),

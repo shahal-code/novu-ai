@@ -192,6 +192,7 @@ export async function streamChat(
     }
   }
 
+  buffer += decoder.decode();
   if (buffer.trim()) {
     processLine(buffer.trim());
   }
