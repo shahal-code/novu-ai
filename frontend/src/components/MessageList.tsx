@@ -402,7 +402,7 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
           )}
 
           <div className={`max-w-[85%] px-5 py-3.5 text-[15px] leading-relaxed ${msg.role === 'user' ? 'bubble-me' : 'bubble-them'}`}>
-            {renderMarkdown(msg.content, msg.id)}
+            {renderContent(msg.content, msg.id)}
           </div>
         </div>
       ))}
