@@ -5,6 +5,8 @@ import { auth, setToken } from '../lib/api';
 import NovuLiveLogo from '../components/NovuLiveLogo';
 import WaterBubbles from '../components/WaterBubbles';
 import WaterWave from '../components/WaterWave';
+import WaterFishes from '../components/WaterFishes';
+import SeaDecorations from '../components/SeaDecorations';
 
 type Screen = 'start' | 'email-code' | 'password';
 
@@ -81,6 +83,10 @@ export default function Auth() {
         <WaterWave />
         {/* Rising glass bubbles on click */}
         <WaterBubbles />
+        {/* Swimming small glass fishes */}
+        <WaterFishes count={4} />
+        {/* Starfish and Jellyfish */}
+        <SeaDecorations />
 
         {screen === 'start' && <>
           <div className="mb-6 flex flex-col items-center"><NovuLiveLogo status={loading ? 'thinking' : emailFocused ? 'looking' : 'greeting'} className="auth-robot mb-4 h-14 w-14 rounded-2xl" /><h1 className="text-center text-3xl font-bold text-white">Log in or sign up</h1><p className="mt-3 max-w-xs text-center text-sm leading-6 text-zinc-300">Get smarter responses and keep your NovuAI chats in sync.</p></div>

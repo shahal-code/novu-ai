@@ -4,6 +4,8 @@ import NovuLiveLogo from './NovuLiveLogo';
 import { useTheme } from '../context/ThemeContext';
 import WaterBubbles from './WaterBubbles';
 import WaterWave from './WaterWave';
+import WaterFishes from './WaterFishes';
+import SeaDecorations from './SeaDecorations';
 
 export interface Conversation {
   id: string;
@@ -82,9 +84,13 @@ export default function Sidebar({
         <div style={{position:'absolute',width:'120px',height:'80px',bottom:'35%',left:'10%',background:'radial-gradient(ellipse,rgba(94,234,212,0.15),transparent 70%)',filter:'blur(14px)',borderRadius:'50%',pointerEvents:'none',animation:'causticShift 9s ease-in-out infinite',zIndex:1}} />
         <div style={{position:'absolute',width:'90px',height:'60px',bottom:'20%',right:'5%',background:'radial-gradient(ellipse,rgba(45,212,191,0.12),transparent 70%)',filter:'blur(12px)',borderRadius:'50%',pointerEvents:'none',animation:'causticShift 12s ease-in-out infinite reverse',zIndex:1}} />
         {/* Single top wave */}
-        <WaterWave style={{ top: '50%' }} />
+        <WaterWave style={{ top: 'calc(40% + 38.4px)' }} />
         {/* Rising glass bubbles on click */}
         <WaterBubbles />
+        {/* Swimming small glass fishes */}
+        <WaterFishes count={2} />
+        {/* Starfish and Jellyfish */}
+        <SeaDecorations />
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center">

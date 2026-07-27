@@ -4,6 +4,8 @@ import { Plus, Mic, Newspaper, PenLine, Sparkles, Code, Terminal, Palette, Music
 import NovuLiveLogo from './NovuLiveLogo';
 import WaterBubbles from './WaterBubbles';
 import WaterWave from './WaterWave';
+import WaterFishes from './WaterFishes';
+import SeaDecorations from './SeaDecorations';
 
 interface WelcomeScreenProps {
   conversations: Conversation[];
@@ -59,23 +61,25 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 w-full h-full animate-fade-in relative z-10">
-      <main className="auth-dialog relative w-full max-w-[500px] animate-fade-in px-5 py-10 sm:px-10 flex flex-col items-center">
-        {/* Caustic water light spots */}
+    <div className="flex flex-1 flex-col items-center justify-center px-4 w-full h-full animate-fade-in relative z-10 overflow-hidden">
+      {/* Water effects applied to full screen background instead of a card */}
+      <div className="absolute inset-0 pointer-events-none">
         <div className="auth-caustic-1" />
         <div className="auth-caustic-2" />
-        {/* Single top wave line */}
         <WaterWave />
-        {/* Rising glass bubbles on click */}
         <WaterBubbles />
-        <div className="mb-6 flex flex-col items-center">
-          <NovuLiveLogo status="greeting" className="auth-robot mb-4 h-14 w-14 rounded-2xl" />
-          <h2 className="text-center text-3xl font-bold text-white">
-            What's on your mind today?
+        <WaterFishes count={6} />
+        <SeaDecorations />
+      </div>
+
+      <main className="relative w-full max-w-3xl animate-fade-in flex flex-col items-center z-10 px-4">
+        <div className="mb-8 flex flex-col items-center">
+          <h2 className="text-center text-3xl font-display font-semibold text-white">
+            Where should we begin?
           </h2>
         </div>
 
-        <div className="w-full relative flex items-center mb-6">
+        <div className="w-full relative flex items-center mb-8">
         <div className="absolute left-4 text-zinc-400 z-10">
           <Plus className="h-5 w-5" />
         </div>
@@ -85,7 +89,7 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="auth-field w-full pl-12 pr-24 py-3.5 text-[15px]"
+          className="auth-field w-full !pl-12 !pr-[90px] py-3.5 text-[15px]"
         />
         <div className="absolute right-3 flex items-center gap-2 z-10">
           <button className="text-zinc-400 hover:text-white transition-colors p-1" title="Voice Input">
@@ -99,17 +103,17 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
         </div>
       </div>
 
-      <div className="w-full flex flex-col gap-2.5">
+      <div className="w-full flex flex-col gap-1 mt-4">
         {activeSuggestions.map((sug) => (
           <button 
             key={sug.id}
             onClick={() => onSend(sug.text)}
-            className="auth-provider justify-start pl-6"
+            className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/5 transition-colors text-zinc-300 text-left"
           >
-            <span className="text-zinc-400">
+            <span className="text-zinc-500">
               {sug.icon}
             </span>
-            <span className="text-[14px]">
+            <span className="text-[15px] font-medium">
               {sug.text}
             </span>
           </button>
