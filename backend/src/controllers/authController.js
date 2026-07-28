@@ -1,3 +1,4 @@
+import { MESSAGES } from '../constants/messages.js';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
@@ -18,8 +19,8 @@ export async function register(req, res) {
   try {
     const email = req.body.email?.trim().toLowerCase();
     const { password } = req.body;
-    if (!isValidEmail(email) || !password) return res.status(400).json({ error: 'Enter a valid email and password.' });
-    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    if (!isValidEmail(email) || !password) return res.status(400).json({ error: MESSAGES.AUTH.INVALID_CREDS });
+    if (password.length < 8) return res.status(400).json({ error: MESSAGES.AUTH.PASSWORD_LENGTH });
 
     const user = await createOrUpdatePasswordUser(email, password);
     const result = authResponse(user, 201);
@@ -27,7 +28,7 @@ export async function register(req, res) {
   } catch (err) {
     console.error('Register error:', err);
     if (err.status) return res.status(err.status).json({ error: err.message });
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: MESSAGES.GLOBAL.SERVER_ERROR });
   }
 }
 
@@ -35,29 +36,29 @@ export async function login(req, res) {
   try {
     const email = req.body.email?.trim().toLowerCase();
     const { password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
+    if (!email || !password) return res.status(400).json({ error: MESSAGES.AUTH.EMAIL_PWD_REQUIRED });
 
     const user = await authenticatePasswordUser(email, password);
-    if (!user) return res.status(401).json({ error: 'Invalid email or password.' });
+    if (!user) return res.status(401).json({ error: MESSAGES.AUTH.LOGIN_FAILED });
 
     const result = authResponse(user);
     res.json(result.body);
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: MESSAGES.GLOBAL.SERVER_ERROR });
   }
 }
 
 export async function requestEmailOtp(req, res) {
   try {
     const email = req.body.email?.trim().toLowerCase();
-    if (!isValidEmail(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
+    if (!isValidEmail(email)) return res.status(400).json({ error: MESSAGES.AUTH.INVALID_EMAIL });
 
     await sendEmailOtp(email);
-    res.json({ message: 'Verification code sent.' });
+    res.json({ message: MESSAGES.AUTH.OTP_SENT });
   } catch (err) {
     console.error('Email OTP error:', err);
-    res.status(err.status || 500).json({ error: err.message || 'Unable to send the verification email. Try again shortly.' });
+    res.status(err.status || 500).json({ error: err.message || MESSAGES.AUTH.OTP_SEND_ERROR });
   }
 }
 
@@ -70,13 +71,13 @@ export async function verifyEmailOtp(req, res) {
     res.json(result.body);
   } catch (err) {
     console.error('Email OTP verification error:', err);
-    res.status(err.status || 500).json({ error: err.message || 'Unable to verify the code. Try again.' });
+    res.status(err.status || 500).json({ error: err.message || MESSAGES.AUTH.OTP_VERIFY_ERROR });
   }
 }
 
 export function googleRedirect(req, res) {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_CALLBACK_URL) {
-    return res.status(503).send('Google sign-in is not configured.');
+    return res.status(503).send(MESSAGES.AUTH.GOOGLE_NOT_CONFIGURED);
   }
 
   const nonce = crypto.randomBytes(16).toString('hex');
@@ -97,7 +98,7 @@ export async function googleCallback(req, res) {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   try {
     const state = jwt.verify(req.query.state, process.env.JWT_SECRET);
-    if (state.purpose !== 'google-oauth' || !req.query.code) throw new Error('Invalid OAuth response');
+    if (state.purpose !== 'google-oauth' || !req.query.code) throw new Error(MESSAGES.AUTH.GOOGLE_INVALID_RESPONSE);
 
     const tokenReply = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -112,30 +113,30 @@ export async function googleCallback(req, res) {
     });
 
     const tokenData = await tokenReply.json();
-    if (!tokenReply.ok) throw new Error(tokenData.error || 'Google token exchange failed');
+    if (!tokenReply.ok) throw new Error(tokenData.error || MESSAGES.AUTH.GOOGLE_TOKEN_FAILED);
 
     const profileReply = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
 
     const profile = await profileReply.json();
-    if (!profileReply.ok || !profile.email_verified || !profile.email) throw new Error('Google did not provide a verified email');
+    if (!profileReply.ok || !profile.email_verified || !profile.email) throw new Error(MESSAGES.AUTH.GOOGLE_NO_EMAIL);
 
     const user = await findOrUpdateGoogleUser(profile);
     res.redirect(`${frontendUrl}/auth/callback?token=${encodeURIComponent(signToken(user._id.toString()))}`);
   } catch (err) {
     console.error('Google OAuth error:', err.message);
-    res.redirect(`${frontendUrl}/?auth_error=${encodeURIComponent('Google sign-in could not be completed.')}`);
+    res.redirect(`${frontendUrl}/?auth_error=${encodeURIComponent(MESSAGES.AUTH.GOOGLE_OAUTH_ERROR)}`);
   }
 }
 
 export async function getProfile(req, res) {
   try {
     const user = await User.findById(req.userId).select('-passwordHash');
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: MESSAGES.USER.NOT_FOUND });
     res.json({ user: userPayload(user) });
   } catch (err) {
     console.error('Profile error:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: MESSAGES.GLOBAL.SERVER_ERROR });
   }
 }

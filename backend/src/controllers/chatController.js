@@ -1,3 +1,4 @@
+import { MESSAGES } from '../constants/messages.js';
 import { StringDecoder } from 'string_decoder';
 import User from '../models/User.js';
 import { buildChatPayload, createChatStream } from '../services/chatService.js';
@@ -8,7 +9,7 @@ export async function streamChat(req, res) {
   try {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'messages array required' });
+      return res.status(400).json({ error: MESSAGES.CHAT.MESSAGES_REQUIRED });
     }
 
     const user = await User.findById(req.userId).select('name email');
