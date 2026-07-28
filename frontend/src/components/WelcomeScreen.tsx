@@ -7,6 +7,7 @@ import WaterFishes from './WaterFishes';
 import SeaDecorations from './SeaDecorations';
 import SandLayer from './SandLayer';
 import InputBox from './InputBox';
+import { useGyroscope } from '../hooks/useGyroscope';
 
 interface WelcomeScreenProps {
   conversations: Conversation[];
@@ -18,6 +19,7 @@ const MUSIC_KEYWORDS = ['music', 'song', 'sing', 'lyrics', 'guitar', 'piano', 'b
 
 export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenProps) {
   const [value, setValue] = useState('');
+  const { tiltX } = useGyroscope();
 
   const typedTopic = useMemo(() => {
     const query = value.trim().toLowerCase();
@@ -65,17 +67,16 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
 
   const activeSuggestions = SUGGESTIONS[interest as keyof typeof SUGGESTIONS];
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      const text = value.trim();
-      if (text) onSend(text);
-    }
-  };
-
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 w-full h-full animate-fade-in relative z-10 overflow-hidden">
-      {/* Water effects applied to full screen background instead of a card */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* Gyro-tilt background wrapper */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none transition-transform duration-300 ease-out origin-center"
+        style={{ 
+          transform: `rotate(${-tiltX}deg) scale(1.1)`, 
+          // Scale 1.1 prevents the edges of the background from becoming visible when rotated
+        }}
+      >
         <div className="auth-caustic-1" />
         <div className="auth-caustic-2" />
         <WaterWave />
