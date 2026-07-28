@@ -282,7 +282,8 @@ function renderInline(text: string): React.ReactNode[] {
 }
 
 function renderMarkdownInline(text: string): React.ReactNode[] {
-  const markdownRegex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|!\[([^\]]*)\]\(([^)]+)\)/g;
+  // 1,2: bold, 3,4: italic, 5,6: image, 7,8: link, 9: raw url
+  const markdownRegex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|!\[([^\]]*)\]\(([^)]+)\)|(?<!!)\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s()]+(?:[a-zA-Z0-9/]))/g;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let match: RegExpExecArray | null;
@@ -301,6 +302,18 @@ function renderMarkdownInline(text: string): React.ReactNode[] {
       nodes.push(
         <a href={match[6]} target="_blank" rel="noopener noreferrer" key={key++} className="block my-3">
           <img src={match[6]} alt={match[5] || 'Image'} className="rounded-xl max-w-full max-h-96 object-contain border border-white/10 shadow-lg" loading="lazy" />
+        </a>
+      );
+    } else if (match[7] && match[8]) {
+      nodes.push(
+        <a href={match[8]} target="_blank" rel="noopener noreferrer" key={key++} className="text-teal-400 hover:text-teal-300 hover:underline">
+          {match[7]}
+        </a>
+      );
+    } else if (match[9]) {
+      nodes.push(
+        <a href={match[9]} target="_blank" rel="noopener noreferrer" key={key++} className="text-teal-400 hover:text-teal-300 hover:underline break-all">
+          {match[9]}
         </a>
       );
     }
