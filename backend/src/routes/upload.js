@@ -3,12 +3,15 @@ import multer from 'multer';
 import auth from '../middleware/auth.js';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
+import { MODELS, UPLOAD_LIMITS, GROQ_AUDIO_URL } from '../constants/config.js';
+import { handleError } from '../utils/errorHandler.js';
+
 const router = express.Router();
 
 // Store files in memory (no disk writes)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+  limits: { fileSize: UPLOAD_LIMITS.MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     const allowed = [
       'application/pdf', 'text/plain', 
@@ -36,7 +39,7 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     // PDF extraction
     if (mimetype === 'application/pdf') {
       const data = await pdfParse(buffer);
-      const text = data.text.trim().slice(0, 8000); // cap at 8000 chars for Groq context
+      const text = data.text.trim().slice(0, UPLOAD_LIMITS.MAX_TEXT_EXTRACT_CHARS);
       return res.json({
         type: 'document',
         name: originalname,
@@ -48,7 +51,7 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
 
     // Plain text
     if (mimetype === 'text/plain') {
-      const text = buffer.toString('utf-8').trim().slice(0, 8000);
+      const text = buffer.toString('utf-8').trim().slice(0, UPLOAD_LIMITS.MAX_TEXT_EXTRACT_CHARS);
       return res.json({
         type: 'document',
         name: originalname,
@@ -81,10 +84,10 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
       if (ext === 'mpeg') ext = 'mp3';
       
       fd.append('file', blob, `audio.${ext}`);
-      fd.append('model', 'whisper-large-v3-turbo');
+      fd.append('model', MODELS.AUDIO);
       fd.append('response_format', 'json');
 
-      const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      const groqRes = await fetch(GROQ_AUDIO_URL, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
@@ -108,8 +111,7 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
 
     res.status(400).json({ error: 'Unsupported file type' });
   } catch (err) {
-    console.error('Upload error:', err.message);
-    res.status(500).json({ error: err.message });
+    handleError(res, err, 'Upload processing failed');
   }
 });
 
