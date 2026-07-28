@@ -80,8 +80,8 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
       <div 
         className="absolute inset-0 z-0 pointer-events-none transition-transform duration-300 ease-out origin-center"
         style={{ 
-          transform: `rotate(${-tiltX}deg) scale(1.1)`, 
-          // Scale 1.1 prevents the edges of the background from becoming visible when rotated
+          transform: `rotate(${-tiltX}deg) scale(1.25)`, 
+          // Scale 1.25 prevents the edges of the background from becoming visible when rotated
         }}
       >
         <div className="auth-caustic-1" />

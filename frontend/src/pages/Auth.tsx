@@ -118,7 +118,7 @@ export default function Auth() {
         <div 
           className="absolute inset-0 z-0 pointer-events-none transition-transform duration-300 ease-out origin-center rounded-2xl overflow-hidden"
           style={{ 
-            transform: `rotate(${-tiltX}deg) scale(1.15)`, 
+            transform: `rotate(${-tiltX}deg) scale(1.25)`, 
           }}
         >
           {/* Caustic water light spots */}

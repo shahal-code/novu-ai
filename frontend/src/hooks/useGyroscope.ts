@@ -7,9 +7,11 @@ export function useGyroscope() {
     const handleOrientation = (event: DeviceOrientationEvent) => {
       const gamma = event.gamma || 0; // Left-to-right tilt in degrees (-90 to 90)
       
-      // Clamp the tilt so it doesn't flip completely upside down in a weird way
-      // Limit rotation to -25 to +25 degrees for a realistic water sloshing effect
-      const clampedGamma = Math.max(-25, Math.min(25, gamma));
+      // Reduce sensitivity by multiplying by a fraction (e.g., 0.3) so it feels much slower and smoother
+      const smoothedGamma = gamma * 0.3;
+      
+      // Limit rotation to -15 to +15 degrees for a subtle water sloshing effect
+      const clampedGamma = Math.max(-15, Math.min(15, smoothedGamma));
       
       setTiltX(clampedGamma);
     };
