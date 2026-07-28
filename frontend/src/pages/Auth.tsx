@@ -104,6 +104,16 @@ export default function Auth() {
       <main className="auth-dialog relative w-full max-w-[430px] animate-fade-in px-5 py-8 sm:px-10">
         <button type="button" onClick={() => navigate('/')} className="absolute right-5 top-5 text-zinc-300 transition hover:text-white z-20" aria-label="Close sign in"><X size={18} /></button>
         {screen !== 'start' && <button type="button" onClick={goBack} className="absolute left-5 top-5 text-zinc-300 transition hover:text-white z-20" aria-label="Go back"><ArrowLeft size={18} /></button>}
+        {/* Non-tilting elements (seabed, plants, fish) */}
+        <div className="absolute inset-0 z-0 pointer-events-none rounded-2xl overflow-hidden">
+          {/* Sandy seabed */}
+          <SandLayer />
+          {/* Swimming small glass fishes */}
+          <WaterFishes count={3} />
+          {/* Starfish, Jellyfish & Kelp */}
+          <SeaDecorations />
+        </div>
+
         {/* Gyro-tilt background wrapper */}
         <div 
           className="absolute inset-0 z-0 pointer-events-none transition-transform duration-300 ease-out origin-center rounded-2xl overflow-hidden"
@@ -116,14 +126,8 @@ export default function Auth() {
           <div className="auth-caustic-2" />
           {/* Single top wave line */}
           <WaterWave />
-          {/* Sandy seabed */}
-          <SandLayer />
           {/* Rising glass bubbles on click */}
           <WaterBubbles />
-          {/* Swimming small glass fishes */}
-          <WaterFishes count={3} />
-          {/* Starfish, Jellyfish & Kelp */}
-          <SeaDecorations />
         </div>
 
         {/* All form content sits above the water layers */}

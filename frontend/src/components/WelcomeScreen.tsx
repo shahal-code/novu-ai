@@ -69,7 +69,14 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 w-full h-full animate-fade-in relative z-10 overflow-hidden">
-      {/* Gyro-tilt background wrapper */}
+      {/* Non-tilting elements (seabed, plants, fish) */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <SandLayer />
+        <WaterFishes count={6} />
+        <SeaDecorations />
+      </div>
+
+      {/* Gyro-tilt water elements (wave, bubbles, caustics) */}
       <div 
         className="absolute inset-0 z-0 pointer-events-none transition-transform duration-300 ease-out origin-center"
         style={{ 
@@ -80,10 +87,7 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
         <div className="auth-caustic-1" />
         <div className="auth-caustic-2" />
         <WaterWave />
-        <SandLayer />
         <WaterBubbles />
-        <WaterFishes count={6} />
-        <SeaDecorations />
       </div>
 
       <main className="relative w-full max-w-3xl animate-fade-in flex flex-col items-center z-10 px-4">
