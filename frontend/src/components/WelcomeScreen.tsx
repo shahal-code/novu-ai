@@ -77,16 +77,16 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
       </div>
 
       {/* Gyro-tilt water elements (wave, bubbles, caustics) */}
-      <div 
+      <div
         className="absolute inset-0 z-0 pointer-events-none transition-transform duration-300 ease-out origin-center"
-        style={{ 
-          transform: `rotate(${-tiltX}deg) scale(1.25)`, 
+        style={{
+          transform: `rotate(${-tiltX}deg) scale(1.25)`,
           // Scale 1.25 prevents the edges of the background from becoming visible when rotated
         }}
       >
         <div className="auth-caustic-1" />
         <div className="auth-caustic-2" />
-        <WaterWave style={{ top: '50%' }} />
+        <WaterWave style={{ top: '43%' }} />
         <WaterBubbles />
       </div>
 
@@ -112,22 +112,22 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
           }
         `}</style>
 
-      <div className="w-full flex flex-col gap-1 mt-4">
-        {activeSuggestions.map((sug) => (
-          <button 
-            key={sug.id}
-            onClick={() => onSend(sug.text)}
-            className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/5 transition-colors text-zinc-300 text-left"
-          >
-            <span className="text-zinc-500">
-              {sug.icon}
-            </span>
-            <span className="text-[15px] font-medium">
-              {sug.text}
-            </span>
-          </button>
-        ))}
-      </div>
+        <div className="w-full flex flex-col gap-1 mt-4">
+          {activeSuggestions.map((sug) => (
+            <button
+              key={sug.id}
+              onClick={() => onSend(sug.text)}
+              className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/5 transition-colors text-zinc-300 text-left"
+            >
+              <span className="text-zinc-500">
+                {sug.icon}
+              </span>
+              <span className="text-[15px] font-medium">
+                {sug.text}
+              </span>
+            </button>
+          ))}
+        </div>
       </main>
     </div>
   );

@@ -113,10 +113,10 @@ export default function Sidebar({
         aria-label="Conversations sidebar"
       >
         {/* Water caustic shimmer elements */}
-        <div style={{position:'absolute',width:'120px',height:'80px',bottom:'35%',left:'10%',background:'radial-gradient(ellipse,rgba(94,234,212,0.15),transparent 70%)',filter:'blur(14px)',borderRadius:'50%',pointerEvents:'none',animation:'causticShift 9s ease-in-out infinite',zIndex:1}} />
-        <div style={{position:'absolute',width:'90px',height:'60px',bottom:'20%',right:'5%',background:'radial-gradient(ellipse,rgba(45,212,191,0.12),transparent 70%)',filter:'blur(12px)',borderRadius:'50%',pointerEvents:'none',animation:'causticShift 12s ease-in-out infinite reverse',zIndex:1}} />
+        <div style={{ position: 'absolute', width: '120px', height: '80px', bottom: '35%', left: '10%', background: 'radial-gradient(ellipse,rgba(94,234,212,0.15),transparent 70%)', filter: 'blur(14px)', borderRadius: '50%', pointerEvents: 'none', animation: 'causticShift 9s ease-in-out infinite', zIndex: 1 }} />
+        <div style={{ position: 'absolute', width: '90px', height: '60px', bottom: '20%', right: '5%', background: 'radial-gradient(ellipse,rgba(45,212,191,0.12),transparent 70%)', filter: 'blur(12px)', borderRadius: '50%', pointerEvents: 'none', animation: 'causticShift 12s ease-in-out infinite reverse', zIndex: 1 }} />
         {/* Single top wave */}
-        <WaterWave style={{ top: 'calc(50% + 2rem)' }} />
+        <WaterWave style={{ top: 'calc(42% + 2rem)' }} />
         {/* Sandy seabed */}
         <SandLayer />
         {/* Rising glass bubbles on click */}
@@ -188,7 +188,7 @@ export default function Sidebar({
                       className={`rounded-lg px-2 py-2 transition-colors ${conv.id === activeId
                         ? 'bg-white/10 text-white'
                         : 'text-zinc-400 hover:bg-white/10 hover:text-white'
-                      }`}
+                        }`}
                     >
                       {renamingId === conv.id ? (
                         <div className="flex items-center gap-2">
