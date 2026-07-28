@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
+import { connectDB } from './config/db.js';
 
 import authRoutes from './routes/auth.js';
 import conversationRoutes from './routes/conversations.js';
@@ -41,15 +41,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // Connect to MongoDB and start server
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`🚀 NovuAI backend running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB connection failed:', err.message);
-    process.exit(1);
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 NovuAI backend running on http://localhost:${PORT}`);
   });
+});

@@ -56,6 +56,17 @@ export default function Auth() {
       .catch(() => setSessionChecked(true));
   }, [navigate]);
 
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // If the page was restored from bfcache (e.g. clicking the back button)
+      if (event.persisted && auth.isLoggedIn()) {
+        navigate('/chat', { replace: true });
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [navigate]);
+
   const run = async (work: () => Promise<void>) => {
     setError(''); setNotice(''); setLoading(true);
     try { await work(); } catch (err) { setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.'); }
