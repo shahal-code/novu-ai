@@ -1,7 +1,7 @@
 import { ENV } from '../config/env.js';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import fetch from 'node-fetch';
-import { MODELS, UPLOAD_LIMITS, GROQ_AUDIO_URL } from '../constants/config.js';
+import { MODELS, UPLOAD_LIMITS, GROQ_AUDIO_URL } from '../config/app.js';
 
 export async function parsePdf(buffer) {
   const data = await pdfParse(buffer);

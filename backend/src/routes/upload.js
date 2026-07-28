@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import auth from '../middleware/auth.js';
 import * as uploadController from '../controllers/uploadController.js';
-import { UPLOAD_LIMITS } from '../constants/config.js';
+import { UPLOAD_LIMITS } from '../config/app.js';
 
 const router = express.Router();
 
