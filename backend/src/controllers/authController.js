@@ -1,3 +1,4 @@
+import { ENV } from '../config/env.js';
 import { MESSAGES } from '../constants/messages.js';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -76,15 +77,15 @@ export async function verifyEmailOtp(req, res) {
 }
 
 export function googleRedirect(req, res) {
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_CALLBACK_URL) {
+  if (!ENV.GOOGLE.CLIENT_ID || !ENV.GOOGLE.CLIENT_SECRET || !ENV.GOOGLE.CALLBACK_URL) {
     return res.status(503).send(MESSAGES.AUTH.GOOGLE_NOT_CONFIGURED);
   }
 
   const nonce = crypto.randomBytes(16).toString('hex');
-  const signedState = jwt.sign({ purpose: 'google-oauth', nonce }, process.env.JWT_SECRET, { expiresIn: '10m' });
+  const signedState = jwt.sign({ purpose: 'google-oauth', nonce }, ENV.JWT_SECRET, { expiresIn: '10m' });
   const params = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+    client_id: ENV.GOOGLE.CLIENT_ID,
+    redirect_uri: ENV.GOOGLE.CALLBACK_URL,
     response_type: 'code',
     scope: 'openid email profile',
     state: signedState,
@@ -95,9 +96,9 @@ export function googleRedirect(req, res) {
 }
 
 export async function googleCallback(req, res) {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = ENV.FRONTEND_URL || 'http://localhost:5173';
   try {
-    const state = jwt.verify(req.query.state, process.env.JWT_SECRET);
+    const state = jwt.verify(req.query.state, ENV.JWT_SECRET);
     if (state.purpose !== 'google-oauth' || !req.query.code) throw new Error(MESSAGES.AUTH.GOOGLE_INVALID_RESPONSE);
 
     const tokenReply = await fetch('https://oauth2.googleapis.com/token', {
@@ -105,9 +106,9 @@ export async function googleCallback(req, res) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code: req.query.code,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+        client_id: ENV.GOOGLE.CLIENT_ID,
+        client_secret: ENV.GOOGLE.CLIENT_SECRET,
+        redirect_uri: ENV.GOOGLE.CALLBACK_URL,
         grant_type: 'authorization_code',
       }),
     });

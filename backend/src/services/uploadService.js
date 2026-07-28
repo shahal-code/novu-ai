@@ -1,3 +1,4 @@
+import { ENV } from '../config/env.js';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import fetch from 'node-fetch';
 import { MODELS, UPLOAD_LIMITS, GROQ_AUDIO_URL } from '../constants/config.js';
@@ -17,7 +18,7 @@ export function parseImage(buffer, mimetype) {
 }
 
 export async function transcribeAudio(buffer, mimetype, originalname) {
-  if (!process.env.GROQ_API_KEY) {
+  if (!ENV.GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is not configured on the server.');
   }
 
@@ -34,7 +35,7 @@ export async function transcribeAudio(buffer, mimetype, originalname) {
   const groqRes = await fetch(GROQ_AUDIO_URL, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+      'Authorization': `Bearer ${ENV.GROQ_API_KEY}`
     },
     body: fd
   });

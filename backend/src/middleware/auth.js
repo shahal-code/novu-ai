@@ -1,3 +1,4 @@
+import { ENV } from '../config/env.js';
 import jwt from 'jsonwebtoken';
 
 export default function authMiddleware(req, res, next) {
@@ -8,7 +9,7 @@ export default function authMiddleware(req, res, next) {
 
   const token = authHeader.slice(7);
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, ENV.JWT_SECRET);
     req.userId = payload.userId;
     next();
   } catch {

@@ -1,3 +1,4 @@
+import { ENV } from '../config/env.js';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -13,7 +14,7 @@ export function isValidEmail(email) {
 }
 
 export function signToken(userId) {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId }, ENV.JWT_SECRET, { expiresIn: '7d' });
 }
 
 export function userPayload(user) {
@@ -25,13 +26,13 @@ export function authResponse(user, status = 200) {
 }
 
 async function getMailer() {
-  if (process.env.SMTP_URL) return nodemailer.createTransport(process.env.SMTP_URL);
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  if (ENV.SMTP.URL) return nodemailer.createTransport(ENV.SMTP.URL);
+  if (ENV.SMTP.HOST && ENV.SMTP.USER && ENV.SMTP.PASS) {
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      host: ENV.SMTP.HOST,
+      port: ENV.SMTP.PORT,
+      secure: ENV.SMTP.SECURE,
+      auth: { user: ENV.SMTP.USER, pass: ENV.SMTP.PASS },
     });
   }
 
@@ -88,7 +89,7 @@ export async function sendEmailOtp(email) {
     if (!mailer) return;
 
     const info = await mailer.sendMail({
-      from: process.env.EMAIL_FROM || '"NovuAI Dev" <test@novuai.app>',
+      from: ENV.SMTP.FROM || '"NovuAI Dev" <test@novuai.app>',
       to: email,
       subject: 'Your NovuAI verification code',
       text: `Your NovuAI verification code is ${code}. It expires in 10 minutes.`,
