@@ -133,7 +133,7 @@ export default function InputBox({ onSend, onTyping, disabled, initialValue = ''
   const isEmpty = value.trim().length === 0;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 pb-6">
+    <div className="w-full max-w-5xl mx-auto px-4 pb-6">
       <div className={`input-glass relative flex items-end w-full ${disabled ? 'opacity-70' : ''}`}>
         <textarea
           ref={textareaRef}

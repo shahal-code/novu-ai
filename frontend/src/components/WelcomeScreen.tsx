@@ -90,7 +90,7 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
         <WaterBubbles />
       </div>
 
-      <main className="relative w-full max-w-3xl animate-fade-in flex flex-col items-center z-10 px-4">
+      <main className="relative w-full max-w-5xl animate-fade-in flex flex-col items-center z-10 px-4">
         <div className="mb-8 flex flex-col items-center">
           <h2 className="text-center text-3xl font-display font-semibold text-white">
             Where should we begin?

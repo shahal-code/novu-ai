@@ -477,7 +477,7 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
   }
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-end px-4 py-8" role="log" aria-live="polite">
+    <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col justify-end px-4 py-8" role="log" aria-live="polite">
       <div className="flex-1">
         {messages.map((msg) => (
           <div
