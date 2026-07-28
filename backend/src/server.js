@@ -42,6 +42,6 @@ app.get('/api/health', (req, res) => {
 // Connect to MongoDB and start server
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 NovuAI backend running on http://localhost:${PORT}`);
+    console.log(`NovuAI backend running on http://localhost:${PORT}`);
   });
 });
