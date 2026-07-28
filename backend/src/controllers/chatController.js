@@ -1,6 +1,8 @@
 import { StringDecoder } from 'string_decoder';
 import User from '../models/User.js';
 import { buildChatPayload, createChatStream } from '../services/chatService.js';
+import { webSearch, needsWebSearch, formatResultsAsContext } from '../services/webSearch.js';
+import { loadMemoryContext, extractAndSaveFacts } from '../services/memory.js';
 
 export async function streamChat(req, res) {
   try {
@@ -11,7 +13,20 @@ export async function streamChat(req, res) {
 
     const user = await User.findById(req.userId).select('name email');
     const userName = user?.name?.trim() || user?.email?.split('@')[0] || 'there';
-    const groqRes = await createChatStream(messages, userName);
+
+    // ── Memory context ──
+    const memoryContext = await loadMemoryContext(req.userId);
+
+    // ── Web search context ──
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')?.content ?? '';
+    let searchContext = '';
+    let searchResults = [];
+    if (needsWebSearch(lastUserMsg)) {
+      searchResults = await webSearch(lastUserMsg);
+      searchContext = formatResultsAsContext(searchResults);
+    }
+
+    const groqRes = await createChatStream(messages, userName, memoryContext + searchContext);
 
     if (!groqRes.ok) {
       const errText = await groqRes.text();
@@ -23,6 +38,12 @@ export async function streamChat(req, res) {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.flushHeaders();
+
+    // Send search metadata first so the frontend can show source cards
+    if (searchResults.length) {
+      res.write(`data: ${JSON.stringify({ searchResults })}\n\n`);
+      res.flush?.();
+    }
 
     const decoder = new StringDecoder('utf8');
     let buffer = '';
@@ -58,14 +79,16 @@ export async function streamChat(req, res) {
 
       groqRes.body.on('end', () => {
         buffer += decoder.end();
-        if (buffer.trim()) {
-          flushLine(buffer);
-        }
+        if (buffer.trim()) flushLine(buffer);
         resolve();
       });
 
       groqRes.body.on('error', (error) => reject(error));
     });
+
+    // ── Save new memory facts asynchronously (don't block response) ──
+    extractAndSaveFacts(req.userId, messages).catch(() => {});
+
   } catch (err) {
     console.error('Chat error:', err);
     if (!res.headersSent) {

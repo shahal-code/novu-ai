@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface Bubble {
   id: number;
@@ -12,7 +12,8 @@ interface Bubble {
 let uid = 0;
 
 /**
- * WaterBubbles — click-triggered rising bubbles.
+ * WaterBubbles — click-triggered rising bubbles only.
+ * Fish-emitted bubbles are handled inside WaterFishes.
  * The container listens to window clicks so it doesn't block UI buttons.
  */
 export default function WaterBubbles() {
@@ -24,15 +25,12 @@ export default function WaterBubbles() {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
-      // Only spawn if click is inside the container
       if (
         e.clientX < rect.left ||
         e.clientX > rect.right ||
         e.clientY < rect.top ||
         e.clientY > rect.bottom
-      ) {
-        return;
-      }
+      ) return;
 
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
@@ -67,7 +65,7 @@ export default function WaterBubbles() {
         inset: 0,
         overflow: 'hidden',
         zIndex: 8,
-        pointerEvents: 'none', /* IMPORTANT: Don't block clicks to buttons! */
+        pointerEvents: 'none',
       }}
     >
       {bubbles.map((b) => (
@@ -100,22 +98,10 @@ export default function WaterBubbles() {
 
       <style>{`
         @keyframes clickBubble {
-          0% {
-            transform: translate(-50%, -50%) translateX(0) scale(0.4);
-            opacity: 0.9;
-          }
-          20% {
-            transform: translate(-50%, -50%) translateX(calc(var(--dx) * 0.3)) translateY(-12px) scale(1);
-            opacity: 0.85;
-          }
-          70% {
-            transform: translate(-50%, -50%) translateX(var(--dx)) translateY(-80px) scale(1.05);
-            opacity: 0.50;
-          }
-          100% {
-            transform: translate(-50%, -50%) translateX(calc(var(--dx) * 1.2)) translateY(-140px) scale(1.15);
-            opacity: 0;
-          }
+          0%   { transform: translate(-50%,-50%) translateX(0) scale(0.4); opacity: 0.9; }
+          20%  { transform: translate(-50%,-50%) translateX(calc(var(--dx)*0.3)) translateY(-12px) scale(1); opacity: 0.85; }
+          70%  { transform: translate(-50%,-50%) translateX(var(--dx)) translateY(-80px) scale(1.05); opacity: 0.50; }
+          100% { transform: translate(-50%,-50%) translateX(calc(var(--dx)*1.2)) translateY(-140px) scale(1.15); opacity: 0; }
         }
       `}</style>
     </div>

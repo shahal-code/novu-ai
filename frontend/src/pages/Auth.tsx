@@ -6,6 +6,7 @@ import NovuLiveLogo from '../components/NovuLiveLogo';
 import WaterBubbles from '../components/WaterBubbles';
 import WaterWave from '../components/WaterWave';
 import WaterFishes from '../components/WaterFishes';
+import SandLayer from '../components/SandLayer';
 import SeaDecorations from '../components/SeaDecorations';
 
 type Screen = 'start' | 'email-code' | 'password';
@@ -106,12 +107,17 @@ export default function Auth() {
         <div className="auth-caustic-2" />
         {/* Single top wave line */}
         <WaterWave />
+        {/* Sandy seabed */}
+        <SandLayer />
         {/* Rising glass bubbles on click */}
         <WaterBubbles />
         {/* Swimming small glass fishes */}
-        <WaterFishes count={4} />
-        {/* Starfish and Jellyfish */}
+        <WaterFishes count={3} />
+        {/* Starfish, Jellyfish & Kelp */}
         <SeaDecorations />
+
+        {/* All form content sits above the water layers */}
+        <div style={{ position: 'relative', zIndex: 10 }}>
 
         {screen === 'start' && <>
           <div className="mb-6 flex flex-col items-center"><NovuLiveLogo status={loading ? 'thinking' : emailFocused ? 'looking' : 'greeting'} className="auth-robot mb-4 h-14 w-14 rounded-2xl" /><h1 className="text-center text-3xl font-bold text-white">Log in or sign up</h1><p className="mt-3 max-w-xs text-center text-sm leading-6 text-zinc-300">Get smarter responses and keep your NovuAI chats in sync.</p></div>
@@ -133,6 +139,7 @@ export default function Auth() {
 
         {screen === 'password' && <section className="pt-5"><h1 className="text-center text-3xl font-bold text-white">{isCreatingPassword ? 'Create a password' : 'Welcome back'}</h1><p className="mt-3 text-center text-sm text-zinc-300">{email}</p><form className="mt-7" onSubmit={submitPassword}><label className="auth-label" htmlFor="auth-password">Password</label><div className="relative"><LockKeyhole className="absolute left-4 top-3.5 text-zinc-400" size={17} /><input id="auth-password" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-field pl-11 pr-11" type={showPassword ? 'text' : 'password'} autoComplete={isCreatingPassword ? 'new-password' : 'current-password'} minLength={8} required autoFocus /><button className="absolute right-3 top-3 text-zinc-400 hover:text-white" type="button" onClick={() => setShowPassword((shown) => !shown)} aria-label="Toggle password visibility">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div><button className="auth-continue" disabled={loading}>{loading ? 'Continuing…' : isCreatingPassword ? 'Create account' : 'Continue'}</button></form>{errorBlock}<button type="button" onClick={() => { setIsCreatingPassword((creating) => !creating); setError(''); }} className="auth-link mx-auto mt-5 block">{isCreatingPassword ? 'Already have a password? Sign in' : 'New here? Create a password'}</button></section>}
 
+        </div> {/* end z-index wrapper */}
       </main>
     </div>
   );

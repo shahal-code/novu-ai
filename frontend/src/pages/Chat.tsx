@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 import MessageList from '../components/MessageList';
 import InputBox from '../components/InputBox';
 import WelcomeScreen from '../components/WelcomeScreen';
+import SettingsModal from '../components/SettingsModal';
 
 export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -17,6 +18,7 @@ export default function Chat() {
   const [loadingMsgs, setLoadingMsgs] = useState<boolean>(false);
   const ACTIVE_CONVERSATION_KEY = 'novuai_active_conversation';
   const [logoStatus, setLogoStatus] = useState<'idle' | 'covering' | 'looking' | 'typing' | 'thinking' | 'success' | 'greeting'>('greeting');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const navigate = useNavigate();
   const abortRef = useRef<AbortController | null>(null);
 
@@ -140,6 +142,43 @@ export default function Chat() {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // --- Phase 4: Image Gen Interception ---
+    if (text.trim().toLowerCase().startsWith('/image ')) {
+      const prompt = text.trim().substring(7).trim();
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:5000'}/api/image/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('novuai_token')}`,
+          },
+          body: JSON.stringify({ prompt }),
+        });
+        const data = await res.json();
+        
+        if (data.url) {
+          aiContent = `Here is your image for **"${prompt}"**:\n\n![${prompt}](${data.url})`;
+        } else {
+          aiContent = 'Sorry, failed to generate image.';
+        }
+      } catch (err: any) {
+        aiContent = `Error generating image: ${err.message}`;
+      }
+
+      setMessages((prev) => [...prev, { id: tempAiId, role: 'assistant', content: aiContent }]);
+      setIsTyping(false);
+      setLogoStatus('idle');
+
+      if (convId) {
+        try {
+          const savedAi = await convApi.saveMessage(convId, 'assistant', aiContent);
+          setMessages((prev) => prev.map((m) => (m.id === tempAiId ? savedAi : m)));
+        } catch {}
+      }
+      return;
+    }
+    // --- End Image Gen Interception ---
+
     try {
       await streamChat(
         history.map((m) => ({ role: m.role, content: m.content })),
@@ -151,6 +190,15 @@ export default function Chat() {
               return [...prev, { id: tempAiId, role: 'assistant', content: aiContent }];
             }
             return prev.map((m) => (m.id === tempAiId ? { ...m, content: aiContent } : m));
+          });
+        },
+        (results) => {
+          setMessages((prev) => {
+            if (!assistantAdded) {
+              assistantAdded = true;
+              return [...prev, { id: tempAiId, role: 'assistant', content: aiContent, searchResults: results }];
+            }
+            return prev.map((m) => (m.id === tempAiId ? { ...m, searchResults: results } : m));
           });
         },
         controller.signal,
@@ -206,6 +254,7 @@ export default function Chat() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onSignOut={() => { auth.logout(); navigate('/'); }}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden bg-transparent relative">
@@ -270,6 +319,8 @@ export default function Chat() {
           </>
         )}
       </div>
+
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

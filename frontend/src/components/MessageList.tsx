@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Volume2, VolumeX, Globe, ExternalLink } from 'lucide-react';
 import NovuLiveLogo from './NovuLiveLogo';
 
 export interface Message {
@@ -281,7 +282,7 @@ function renderInline(text: string): React.ReactNode[] {
 }
 
 function renderMarkdownInline(text: string): React.ReactNode[] {
-  const markdownRegex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3/g;
+  const markdownRegex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|!\[([^\]]*)\]\(([^)]+)\)/g;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let match: RegExpExecArray | null;
@@ -296,6 +297,12 @@ function renderMarkdownInline(text: string): React.ReactNode[] {
       nodes.push(<strong key={key++}>{match[2]}</strong>);
     } else if (match[3]) {
       nodes.push(<em key={key++}>{match[4]}</em>);
+    } else if (match[5] !== undefined && match[6]) {
+      nodes.push(
+        <a href={match[6]} target="_blank" rel="noopener noreferrer" key={key++} className="block my-3">
+          <img src={match[6]} alt={match[5] || 'Image'} className="rounded-xl max-w-full max-h-96 object-contain border border-white/10 shadow-lg" loading="lazy" />
+        </a>
+      );
     }
 
     last = match.index + match[0].length;
@@ -311,6 +318,9 @@ function renderMarkdownInline(text: string): React.ReactNode[] {
 export default function MessageList({ messages, isTyping }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [executing, setExecuting] = useState<Record<string, boolean>>({});
+  const [outputs, setOutputs] = useState<Record<string, { stdout: string; stderr: string }>>({});
 
   useLayoutEffect(() => {
     const node = bottomRef.current;
@@ -323,6 +333,21 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
     return () => cancelAnimationFrame(frame);
   }, [messages, isTyping]);
 
+  const toggleSpeech = (id: string, text: string) => {
+    if (speakingId === id) {
+      window.speechSynthesis.cancel();
+      setSpeakingId(null);
+      return;
+    }
+    
+    window.speechSynthesis.cancel(); // stop any current speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.onend = () => setSpeakingId(null);
+    utterance.onerror = () => setSpeakingId(null);
+    setSpeakingId(id);
+    window.speechSynthesis.speak(utterance);
+  };
+
   const handleCopyCode = async (code: string, blockId: string) => {
     try {
       await navigator.clipboard.writeText(code);
@@ -332,6 +357,35 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
       }, 2000);
     } catch {
       // ignore copy errors
+    }
+  };
+
+  const handleRunCode = async (code: string, language: string, blockId: string) => {
+    setExecuting((prev) => ({ ...prev, [blockId]: true }));
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:5000'}/api/execute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('novuai_token')}`,
+        },
+        body: JSON.stringify({ code, language: language || 'python' }),
+      });
+      const data = await res.json();
+      setOutputs((prev) => ({
+        ...prev,
+        [blockId]: {
+          stdout: data.stdout || '',
+          stderr: data.stderr || data.error || '',
+        },
+      }));
+    } catch (err: any) {
+      setOutputs((prev) => ({
+        ...prev,
+        [blockId]: { stdout: '', stderr: err.message },
+      }));
+    } finally {
+      setExecuting((prev) => ({ ...prev, [blockId]: false }));
     }
   };
 
@@ -372,25 +426,52 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
   }
 
   function renderCodeBlock(code: string, language: string, blockId: string): React.ReactNode {
+    const isRunning = executing[blockId];
+    const output = outputs[blockId];
+    
     return (
       <div key={blockId} className="my-3 overflow-hidden rounded-xl border border-slate-700 bg-[#0d1117] text-[13px] shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-700 bg-[#161b22] px-4 py-1.5 text-xs font-semibold text-slate-400">
           <span>{language || 'code'}</span>
-          <button
-            type="button"
-            onClick={() => handleCopyCode(code, blockId)}
-            className="inline-flex items-center gap-2 rounded-md bg-slate-800 px-2 py-1 text-[11px] font-semibold text-slate-200 transition hover:bg-slate-700"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-200">
-              <path d="M8 17H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" />
-              <rect x="8" y="8" width="12" height="12" rx="2" />
-            </svg>
-            {copiedCodeId === blockId ? 'Copied' : 'Copy'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleRunCode(code, language, blockId)}
+              disabled={isRunning}
+              className="inline-flex items-center gap-1.5 rounded-md bg-teal-500/10 px-2 py-1 text-[11px] font-semibold text-teal-400 transition hover:bg-teal-500/20 disabled:opacity-50"
+            >
+              {isRunning ? (
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-teal-400 border-t-transparent" />
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5 3l14 9-14 9V3z" />
+                </svg>
+              )}
+              Run
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCopyCode(code, blockId)}
+              className="inline-flex items-center gap-2 rounded-md bg-slate-800 px-2 py-1 text-[11px] font-semibold text-slate-200 transition hover:bg-slate-700"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-200">
+                <path d="M8 17H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2" />
+                <rect x="8" y="8" width="12" height="12" rx="2" />
+              </svg>
+              {copiedCodeId === blockId ? 'Copied' : 'Copy'}
+            </button>
+          </div>
         </div>
         <div className="relative overflow-x-auto p-4">
           <code className="whitespace-pre-wrap break-words font-mono text-slate-200">{code}</code>
         </div>
+        {output && (
+          <div className="border-t border-slate-700 bg-black p-3 font-mono text-xs">
+            {output.stdout && <div className="text-zinc-300 whitespace-pre-wrap">{output.stdout}</div>}
+            {output.stderr && <div className="text-rose-400 whitespace-pre-wrap">{output.stderr}</div>}
+            {!output.stdout && !output.stderr && <div className="text-zinc-500 italic">No output</div>}
+          </div>
+        )}
       </div>
     );
   }
@@ -409,8 +490,55 @@ export default function MessageList({ messages, isTyping }: MessageListProps) {
               </div>
             )}
 
-            <div className={`max-w-[85%] px-5 py-3.5 text-[15px] leading-relaxed ${msg.role === 'user' ? 'bubble-me' : 'bubble-them'}`}>
-              {renderContent(msg.content, msg.id)}
+            <div className="flex flex-col gap-1 max-w-[85%] w-full">
+              {msg.role === 'assistant' && msg.searchResults && msg.searchResults.length > 0 && (
+                <div className="mb-2 flex flex-col gap-2 bg-black/20 rounded-2xl p-3 border border-white/5">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-teal-400">
+                    <Globe size={14} />
+                    <span>Searched the web</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {msg.searchResults.map((res: any, idx: number) => (
+                      <a
+                        key={idx}
+                        href={res.url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 transition-colors rounded-xl px-3 py-2 text-[12px] border border-white/10 truncate max-w-[200px]"
+                      >
+                        <span className="text-zinc-300 truncate">{res.title}</span>
+                        {res.url && <ExternalLink size={12} className="text-zinc-500 shrink-0" />}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className={`px-5 py-3.5 text-[15px] leading-relaxed w-fit ${msg.role === 'user' ? 'bubble-me ml-auto' : 'bubble-them'}`}>
+                {renderContent(msg.content, msg.id)}
+              </div>
+              
+              {msg.role === 'assistant' && (
+                <div className="flex items-center gap-2 pl-2">
+                  <button
+                    onClick={() => toggleSpeech(msg.id, msg.content)}
+                    className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-300 transition-colors py-1"
+                    title={speakingId === msg.id ? "Stop speaking" : "Read aloud"}
+                  >
+                    {speakingId === msg.id ? (
+                      <>
+                        <VolumeX size={14} className="text-teal-400" />
+                        <span className="text-teal-400">Stop</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 size={14} />
+                        <span>Read aloud</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}

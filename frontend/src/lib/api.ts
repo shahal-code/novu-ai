@@ -108,6 +108,7 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   created_at?: string;
+  searchResults?: any[];
 }
 
 export const conversations = {
@@ -141,10 +142,11 @@ export const conversations = {
   },
 };
 
-// ---- Streaming chat ----
+// ---- Chat Stream ----
 export async function streamChat(
   messages: { role: string; content: string }[],
   onChunk: (text: string) => void,
+  onSearchData: (results: any[]) => void,
   signal?: AbortSignal,
 ): Promise<void> {
   const token = getToken();
@@ -169,7 +171,8 @@ export async function streamChat(
     const data = line.slice(6).trim();
     if (data === '[DONE]') return true;
     try {
-      const parsed = JSON.parse(data) as { text?: string };
+      const parsed = JSON.parse(data) as { text?: string; searchResults?: any[] };
+      if (parsed.searchResults) onSearchData(parsed.searchResults);
       if (parsed.text) onChunk(parsed.text);
     } catch {
       // skip incomplete or malformed chunks

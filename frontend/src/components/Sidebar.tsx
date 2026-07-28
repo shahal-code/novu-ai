@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
-import { Edit3, Moon, Sun, Save, X } from 'lucide-react';
+import { Edit3, Save, X } from 'lucide-react';
 import NovuLiveLogo from './NovuLiveLogo';
 import { useTheme } from '../context/ThemeContext';
 import WaterBubbles from './WaterBubbles';
 import WaterWave from './WaterWave';
 import WaterFishes from './WaterFishes';
 import SeaDecorations from './SeaDecorations';
+import SandLayer from './SandLayer';
 
 export interface Conversation {
   id: string;
@@ -24,6 +25,7 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onSignOut: () => void;
+  onOpenSettings: () => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -58,6 +60,7 @@ export default function Sidebar({
   isOpen,
   onClose,
   onSignOut,
+  onOpenSettings,
 }: SidebarProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +70,7 @@ export default function Sidebar({
     conv.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
   const grouped = groupConversations(filtered);
-  const { darkMode, toggleTheme } = useTheme();
+  const { darkMode } = useTheme();
 
   const handleStartRename = (conv: Conversation) => {
     setRenamingId(conv.id);
@@ -114,13 +117,15 @@ export default function Sidebar({
         <div style={{position:'absolute',width:'90px',height:'60px',bottom:'20%',right:'5%',background:'radial-gradient(ellipse,rgba(45,212,191,0.12),transparent 70%)',filter:'blur(12px)',borderRadius:'50%',pointerEvents:'none',animation:'causticShift 12s ease-in-out infinite reverse',zIndex:1}} />
         {/* Single top wave */}
         <WaterWave style={{ top: 'calc(40% + 2.4rem)' }} />
+        {/* Sandy seabed */}
+        <SandLayer />
         {/* Rising glass bubbles on click */}
         <WaterBubbles />
         {/* Swimming small glass fishes */}
         <WaterFishes count={2} />
         {/* Starfish and Jellyfish */}
         <SeaDecorations />
-        <div className="flex flex-col gap-3 p-4 border-b border-white/10">
+        <div className="flex flex-col gap-3 p-4 border-b border-white/10" style={{ position: 'relative', zIndex: 10 }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="grid h-8 w-8 place-items-center">
@@ -150,7 +155,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        <div className="p-3">
+        <div className="p-3" style={{ position: 'relative', zIndex: 10 }}>
           <button
             className="btn-primary flex w-full items-center justify-center gap-2 py-2.5 text-sm"
             onClick={onNewChat}
@@ -163,7 +168,7 @@ export default function Sidebar({
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label="Chat history">
+        <nav className="flex-1 overflow-y-auto px-3 pb-4" style={{ position: 'relative', zIndex: 10 }} aria-label="Chat history">
           {conversations.filter((conv) => conv.title.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
             <div className="flex flex-col items-center justify-center pt-8 text-center text-zinc-500">
               <svg className="mb-2 h-8 w-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -247,18 +252,18 @@ export default function Sidebar({
           )}
         </nav>
 
-        <div className="border-t border-white/10 p-3 space-y-1">
+        <div className="border-t border-white/10 p-3 flex flex-col gap-1" style={{ position: 'relative', zIndex: 10 }}>
           <button
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-colors"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-colors"
+            onClick={onOpenSettings}
+            aria-label="Settings"
           >
-            <div className="flex items-center gap-2">
-              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              {darkMode ? 'Light Mode' : 'Dark Mode'}
-            </div>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Memory & Settings
           </button>
-
           <button
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition-colors"
             onClick={onSignOut}

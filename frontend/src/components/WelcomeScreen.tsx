@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import type { Conversation } from '../lib/api';
-import { ArrowRight, Plus, Mic, Newspaper, PenLine, Sparkles, Code, Terminal, Palette, Music, AudioLines, Headphones } from 'lucide-react';
-import NovuLiveLogo from './NovuLiveLogo';
+import { Newspaper, PenLine, Sparkles, Code, Terminal, Palette, Music, AudioLines, Headphones } from 'lucide-react';
 import WaterBubbles from './WaterBubbles';
 import WaterWave from './WaterWave';
 import WaterFishes from './WaterFishes';
 import SeaDecorations from './SeaDecorations';
+import SandLayer from './SandLayer';
+import InputBox from './InputBox';
 
 interface WelcomeScreenProps {
   conversations: Conversation[];
@@ -78,6 +79,7 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
         <div className="auth-caustic-1" />
         <div className="auth-caustic-2" />
         <WaterWave />
+        <SandLayer />
         <WaterBubbles />
         <WaterFishes count={6} />
         <SeaDecorations />
@@ -90,41 +92,20 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
           </h2>
         </div>
 
-        <div className="w-full relative flex items-center mb-8">
-        <div className="absolute left-4 text-zinc-400 z-10">
-          <Plus className="h-5 w-5" />
+        {/* Water-swing wrapper — input bobs & sways like it floats on the surface */}
+        <div className="w-full" style={{ animation: 'inputWaterSwing 4s ease-in-out infinite' }}>
+          <InputBox onSend={onSend} disabled={false} />
         </div>
-        <input 
-          type="text" 
-          placeholder="Ask anything" 
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="auth-field w-full !pl-12 !pr-[90px] py-3.5 text-[15px]"
-        />
-        <div className="absolute right-3 flex items-center gap-2 z-10">
-          {value.trim().length > 0 ? (
-            <button
-              type="button"
-              onClick={() => {
-                const text = value.trim();
-                if (text) {
-                  onSend(text);
-                  setValue('');
-                }
-              }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow-sm hover:-translate-y-[1px] transition-transform"
-              title="Send message"
-            >
-              <ArrowRight className="h-5 w-5" />
-            </button>
-          ) : (
-            <button className="text-zinc-400 hover:text-white transition-colors p-1" title="Voice Input">
-              <Mic className="h-5 w-5" />
-            </button>
-          )}
-        </div>
-      </div>
+
+        <style>{`
+          @keyframes inputWaterSwing {
+            0%   { transform: translateY(0px) rotate(-0.4deg); }
+            25%  { transform: translateY(-5px) rotate(0.3deg); }
+            50%  { transform: translateY(-2px) rotate(-0.3deg); }
+            75%  { transform: translateY(-6px) rotate(0.4deg); }
+            100% { transform: translateY(0px) rotate(-0.4deg); }
+          }
+        `}</style>
 
       <div className="w-full flex flex-col gap-1 mt-4">
         {activeSuggestions.map((sug) => (
