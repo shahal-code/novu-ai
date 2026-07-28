@@ -86,7 +86,7 @@ export default function WelcomeScreen({ conversations, onSend }: WelcomeScreenPr
       >
         <div className="auth-caustic-1" />
         <div className="auth-caustic-2" />
-        <WaterWave />
+        <WaterWave style={{ top: '50%' }} />
         <WaterBubbles />
       </div>
 

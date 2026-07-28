@@ -10,7 +10,7 @@ export default function WaterWave({ style }: { style?: React.CSSProperties }) {
         position: 'absolute',
         left: 0,
         right: 0,
-        top: '40%',
+        top: '46%',
         height: 60,
         overflow: 'hidden',
         pointerEvents: 'none',
