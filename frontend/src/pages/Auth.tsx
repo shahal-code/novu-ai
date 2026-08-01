@@ -35,7 +35,7 @@ export default function Auth() {
     const oauthError = params.get('auth_error');
     if (token) {
       setToken(token);
-      navigate('/chat', { replace: true });
+      navigate('/', { replace: true });
       return;
     }
 
@@ -50,7 +50,7 @@ export default function Auth() {
 
     auth.me()
       .then((data) => {
-        if (data) navigate('/chat', { replace: true });
+        if (data) navigate('/', { replace: true });
         else setSessionChecked(true);
       })
       .catch(() => setSessionChecked(true));
@@ -60,7 +60,7 @@ export default function Auth() {
     const handlePageShow = (event: PageTransitionEvent) => {
       // If the page was restored from bfcache (e.g. clicking the back button)
       if (event.persisted && auth.isLoggedIn()) {
-        navigate('/chat', { replace: true });
+        navigate('/', { replace: true });
       }
     };
     window.addEventListener('pageshow', handlePageShow);
@@ -79,14 +79,14 @@ export default function Auth() {
   };
   const verifyEmailCode = (event: FormEvent) => {
     event.preventDefault();
-    void run(async () => { await auth.verifyEmailOtp(email, code); navigate('/chat', { replace: true }); });
+    void run(async () => { await auth.verifyEmailOtp(email, code); navigate('/', { replace: true }); });
   };
   const submitPassword = (event: FormEvent) => {
     event.preventDefault();
     void run(async () => {
       if (isCreatingPassword) await auth.register(email, password);
       else await auth.login(email, password);
-      navigate('/chat', { replace: true });
+      navigate('/', { replace: true });
     });
   };
   const goBack = () => { setError(''); setNotice(''); setCode(''); setScreen('start'); };

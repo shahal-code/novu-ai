@@ -6,9 +6,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Auth />} />
+        {/* Landing: show chat UI directly (no auth wall) */}
+        <Route path="/" element={<Chat />} />
+        {/* OAuth callback & standalone auth page */}
+        <Route path="/auth" element={<Auth />} />
         <Route path="/auth/callback" element={<Auth />} />
-        <Route path="/chat" element={<Chat />} />
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

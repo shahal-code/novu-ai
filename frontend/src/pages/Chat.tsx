@@ -7,6 +7,7 @@ import MessageList from '../components/MessageList';
 import InputBox from '../components/InputBox';
 import WelcomeScreen from '../components/WelcomeScreen';
 import SettingsModal from '../components/SettingsModal';
+import AuthModal from '../components/AuthModal';
 
 export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -19,21 +20,24 @@ export default function Chat() {
   const ACTIVE_CONVERSATION_KEY = 'novuai_active_conversation';
   const [logoStatus, setLogoStatus] = useState<'idle' | 'covering' | 'looking' | 'typing' | 'thinking' | 'success' | 'greeting'>('greeting');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(auth.isLoggedIn());
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const abortRef = useRef<AbortController | null>(null);
 
-  // ---- Auth guard ----
+  // ---- Auth check (non-blocking) ----
   useEffect(() => {
-    if (!auth.isLoggedIn()) {
-      navigate('/', { replace: true });
-      return;
+    // Check if logged in; if so, load conversations
+    if (auth.isLoggedIn()) {
+      setIsLoggedIn(true);
+      auth.me().then((data) => {
+        if (!data) {
+          auth.logout();
+          setIsLoggedIn(false);
+        }
+      });
     }
-    auth.me().then((data) => {
-      if (!data) {
-        auth.logout();
-        navigate('/', { replace: true });
-      }
-    });
 
     // Reset greeting to idle after 3s
     const timer = setTimeout(() => {
@@ -44,6 +48,7 @@ export default function Chat() {
 
   // ---- Load conversations ----
   const loadConversations = useCallback(async () => {
+    if (!auth.isLoggedIn()) return;
     try {
       const data = await convApi.list();
       setConversations(data);
@@ -94,6 +99,12 @@ export default function Chat() {
 
   // ---- Send message ----
   const handleSend = useCallback(async (text: string) => {
+    // If user is not logged in, show auth modal and remember what they wanted to send
+    if (!auth.isLoggedIn()) {
+      setPendingMessage(text);
+      setAuthModalOpen(true);
+      return;
+    }
     setSuggestionText('');
     setLogoStatus('success');
     
@@ -231,7 +242,21 @@ export default function Chat() {
     }
 
     await loadConversations();
-  }, [activeId, messages, loadConversations]);
+  }, [activeId, messages, loadConversations, isLoggedIn]);
+
+  // ---- After successful auth: refresh state and send pending message ----
+  const handleAuthSuccess = useCallback(() => {
+    setIsLoggedIn(true);
+    setAuthModalOpen(false);
+    loadConversations();
+    if (pendingMessage) {
+      const msg = pendingMessage;
+      setPendingMessage(null);
+      // Small delay so state propagates before send
+      setTimeout(() => handleSend(msg), 100);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingMessage, loadConversations]);
 
 
 
@@ -253,7 +278,7 @@ export default function Chat() {
         }}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        onSignOut={() => { auth.logout(); navigate('/'); }}
+        onSignOut={() => { auth.logout(); setIsLoggedIn(false); setConversations([]); setMessages([]); setActiveId(null); }}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
@@ -277,15 +302,26 @@ export default function Chat() {
             </h1>
           </div>
 
-          <button
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
-            onClick={handleNewChat}
-            aria-label="New chat"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-              <path d="M10 4v12M4 10h12" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {!isLoggedIn && (
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all hover:-translate-y-[1px]"
+                aria-label="Sign in"
+              >
+                Sign in
+              </button>
+            )}
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
+              onClick={handleNewChat}
+              aria-label="New chat"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                <path d="M10 4v12M4 10h12" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
         </header>
 
         {/* Message List */}
@@ -321,6 +357,13 @@ export default function Chat() {
       </div>
 
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {/* Auth modal — shown when unauthenticated user tries to send */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => { setAuthModalOpen(false); setPendingMessage(null); }}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }
