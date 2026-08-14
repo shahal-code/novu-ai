@@ -4,6 +4,7 @@ import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 
 import { validateConfig } from '@infrastructure/config/env.schema';
 import { DatabaseModule } from '@infrastructure/database/database.module';
+import { RedisModule } from '@infrastructure/redis/redis.module';
 import { SharedModule } from '@shared/shared.module';
 import { JwtAuthGuard } from '@shared/guards/jwt-auth.guard';
 import { GlobalExceptionFilter } from '@shared/filters/global-exception.filter';
@@ -25,6 +26,7 @@ import { ExecuteModule } from '@modules/execute/execute.module';
       validate: validateConfig,
     }),
     DatabaseModule,
+    RedisModule,
     SharedModule,
     AuthModule,
     ConversationsModule,

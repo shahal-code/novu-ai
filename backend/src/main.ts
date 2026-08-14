@@ -35,8 +35,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get<number>('PORT', 5000);
-  await app.listen(port);
-  logger.log(`🚀 NovuAI NestJS Clean Architecture Backend running on http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`🚀 NovuAI NestJS Clean Architecture Backend running on port ${port}`);
   logger.log(`📑 Swagger Documentation available on http://localhost:${port}/api/docs`);
 }
 

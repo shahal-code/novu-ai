@@ -14,18 +14,31 @@ import { MongooseConversationRepository } from '../repositories/mongoose-convers
 import { MongooseMessageRepository } from '../repositories/mongoose-message.repository';
 import { MongooseMemoryRepository } from '../repositories/mongoose-memory.repository';
 
+import { CachedUserRepository } from '../repositories/cached-user.repository';
+import { CachedMemoryRepository } from '../repositories/cached-memory.repository';
+import { CachedConversationRepository } from '../repositories/cached-conversation.repository';
+import { RedisEmailOtpRepository } from '../repositories/redis-email-otp.repository';
+
 import { USER_REPOSITORY } from '@domain/repositories/user.repository.interface';
 import { EMAIL_OTP_REPOSITORY } from '@domain/repositories/email-otp.repository.interface';
 import { CONVERSATION_REPOSITORY } from '@domain/repositories/conversation.repository.interface';
 import { MESSAGE_REPOSITORY } from '@domain/repositories/message.repository.interface';
 import { MEMORY_REPOSITORY } from '@domain/repositories/memory.repository.interface';
 
-const repositories = [
-  { provide: USER_REPOSITORY, useClass: MongooseUserRepository },
-  { provide: EMAIL_OTP_REPOSITORY, useClass: MongooseEmailOtpRepository },
-  { provide: CONVERSATION_REPOSITORY, useClass: MongooseConversationRepository },
+const mongooseRepositories = [
+  MongooseUserRepository,
+  MongooseEmailOtpRepository,
+  MongooseConversationRepository,
+  MongooseMessageRepository,
+  MongooseMemoryRepository,
+];
+
+const repositoryProviders = [
+  { provide: USER_REPOSITORY, useClass: CachedUserRepository },
+  { provide: EMAIL_OTP_REPOSITORY, useClass: RedisEmailOtpRepository },
+  { provide: CONVERSATION_REPOSITORY, useClass: CachedConversationRepository },
   { provide: MESSAGE_REPOSITORY, useClass: MongooseMessageRepository },
-  { provide: MEMORY_REPOSITORY, useClass: MongooseMemoryRepository },
+  { provide: MEMORY_REPOSITORY, useClass: CachedMemoryRepository },
 ];
 
 @Global()
@@ -45,7 +58,7 @@ const repositories = [
       { name: Memory.name, schema: MemorySchema },
     ]),
   ],
-  providers: [...repositories],
-  exports: [MongooseModule, ...repositories],
+  providers: [...mongooseRepositories, ...repositoryProviders],
+  exports: [MongooseModule, ...repositoryProviders],
 })
 export class DatabaseModule {}

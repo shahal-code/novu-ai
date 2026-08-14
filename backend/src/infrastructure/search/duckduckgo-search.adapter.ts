@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import fetch from 'node-fetch';
+import { RedisService } from '../redis/redis.service';
 
 export interface SearchResultItem {
   title: string;
@@ -8,11 +9,21 @@ export interface SearchResultItem {
   source: string;
 }
 
+const SEARCH_CACHE_TTL = 3600; // 1 hour
+
 @Injectable()
 export class DuckDuckGoSearchAdapter {
   private readonly logger = new Logger(DuckDuckGoSearchAdapter.name);
 
+  constructor(private readonly redisService: RedisService) {}
+
   async search(query: string): Promise<SearchResultItem[]> {
+    const cacheKey = `search:${query.trim().toLowerCase()}`;
+    const cached = await this.redisService.get<SearchResultItem[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     try {
       const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
       const res = await fetch(url, {
@@ -52,7 +63,11 @@ export class DuckDuckGoSearchAdapter {
         });
       }
 
-      return results.slice(0, 4);
+      const finalResults = results.slice(0, 4);
+      if (finalResults.length > 0) {
+        await this.redisService.set(cacheKey, finalResults, SEARCH_CACHE_TTL);
+      }
+      return finalResults;
     } catch (err: any) {
       this.logger.error(`Web search error: ${err.message}`);
       return [];
