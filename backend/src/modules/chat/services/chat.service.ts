@@ -20,6 +20,8 @@ export class ChatService {
   ) {}
 
   async handleChatStream(userId: string, dto: StreamChatDto, res: Response): Promise<void> {
+    // Hoisted so the finally block can safely reference it
+    let clientDisconnected = false;
     try {
       const user = await this.userRepository.findById(userId);
       const userName = user?.name?.trim() || user?.email?.split('@')[0] || 'there';
@@ -57,7 +59,6 @@ export class ChatService {
       res.flushHeaders();
 
       // Track client disconnection
-      let clientDisconnected = false;
       res.on('close', () => {
         clientDisconnected = true;
         this.logger.debug('Client disconnected mid-stream');
