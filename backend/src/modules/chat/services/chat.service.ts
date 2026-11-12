@@ -54,11 +54,17 @@ export class ChatService {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
-      res.setHeader('Access-Control-Allow-Origin', '*');
       res.flushHeaders();
 
+      // Track client disconnection
+      let clientDisconnected = false;
+      res.on('close', () => {
+        clientDisconnected = true;
+        this.logger.debug('Client disconnected mid-stream');
+      });
+
       // Pushing search metadata first
-      if (searchResults.length) {
+      if (searchResults.length && !clientDisconnected) {
         res.write(`data: ${JSON.stringify({ searchResults })}\n\n`);
         (res as any).flush?.();
       }
@@ -67,6 +73,7 @@ export class ChatService {
       let buffer = '';
 
       const flushLine = (line: string) => {
+        if (clientDisconnected || res.writableEnded) return;
         const trimmed = line.trim();
         if (!trimmed.startsWith('data: ')) return;
         const jsonStr = trimmed.slice(6);
@@ -111,11 +118,22 @@ export class ChatService {
       this.logger.error(`Chat error: ${err.message}`, err.stack);
       if (!res.headersSent) {
         res.status(500).json({ error: err.message || 'Chat processing error' });
+        return;
       }
     } finally {
-      res.write('data: [DONE]\n\n');
-      (res as any).flush?.();
-      res.end();
+      // Guard: only end the stream if the client is still connected and stream is open.
+      // clientDisconnected covers the case where res.writableEnded hasn't updated yet
+      // but the socket is already gone — writing to it would throw ERR_STREAM_WRITE_AFTER_END.
+      try {
+        if (!clientDisconnected && !res.writableEnded) {
+          res.write('data: [DONE]\n\n');
+          (res as any).flush?.();
+          res.end();
+        }
+      } catch (finallyErr: any) {
+        // Swallow any residual write errors from a race-condition disconnect
+        this.logger.debug(`Stream already closed on finalize: ${finallyErr.message}`);
+      }
     }
   }
 }
